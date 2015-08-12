@@ -1,5 +1,11 @@
 function [dispersion_axis]=intragranular_CVA_3_5(g)
 
+%% References
+% Zachary D. Michels, Seth C. Kruckenberg, Joshua R. Davis, and Basil Tikoff
+% Determining vorticity axes from grain-scale dispersion of
+% crystallographic orientations Geology, G36868.1, first published on July
+% 17, 2015, doi:10.1130/G36868.1
+
 % This function performs a principal geodesic analysis on crystallographic
 % orientations extracted from a single grain to identify a grain-scale
 % vorticity vector associated with intragranular crystallographic

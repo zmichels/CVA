@@ -1,6 +1,13 @@
 function [vorts,bulkVort]=sample_scale_CVA_4_0(g,ebsd)
 % written by Zachary D. Michels; February, 2015
 
+%% References
+% Zachary D. Michels, Seth C. Kruckenberg, Joshua R. Davis, and Basil Tikoff
+% Determining vorticity axes from grain-scale dispersion of
+% crystallographic orientations Geology, G36868.1, first published on July
+% 17, 2015, doi:10.1130/G36868.1
+
+
 %% NOTES TO USERS and REFERENCE INFORMATION
 
 % !*** IMPORTANT ***! This function requires MTEX v4.0 Some alteration may
@@ -27,8 +34,11 @@ function [vorts,bulkVort]=sample_scale_CVA_4_0(g,ebsd)
 
 
 % ************************************************************************
-% REFERENCES
-% Michels et al. (2015)
+%% References
+% Zachary D. Michels, Seth C. Kruckenberg, Joshua R. Davis, and Basil Tikoff
+% Determining vorticity axes from grain-scale dispersion of
+% crystallographic orientations Geology, G36868.1, first published on July
+% 17, 2015, doi:10.1130/G36868.1
 
 % ************************************************************************
 
