@@ -95,7 +95,7 @@ vorts(intXYZ)=[];
 % define a kernel density estimation with specified halfwidth. MTEX default
 % uses the de la Vallee Poussin kernel:
 r = plotS2Grid('resolution',0.25*degree,'antipodal');
-kde = kernelDensityEstimation(vorts,r,'antipodal','halfwidth',10*degree);
+kde = kernelDensityEstimation([vorts -vorts],r,'antipodal','halfwidth',10*degree);
 [~,I]=max(kde);
 
 % get vector and negated vector (antipodal) of best-fit axis:
