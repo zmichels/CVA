@@ -72,6 +72,7 @@ mags=[];
 
 [vorts(1),D(1),eV1(1), eV2(1), eV3(1),mags(:,1),T]=intragranularDispersion(ebsd(g(1)));
 
+
 for i = 2:numg
     % Pass one grain object from the GrainSet to the function for
     % intragranular (single-grain) dispersion analysis using Principal
@@ -94,9 +95,9 @@ end
 % for sake of kernel density estimation (below):
 
 [x,y,z]=double(vorts);
-IzeroX = find(~x)';
-IzeroY = find(~y)';
-IzeroZ = find(~z)';
+IzeroX = find(~real(x))';
+IzeroY = find(~real(y))';
+IzeroZ = find(~real(z))';
 intXYZ=intersect(intersect(IzeroX,IzeroY,'rows'),IzeroZ);
 vorts(intXYZ)=[];
 

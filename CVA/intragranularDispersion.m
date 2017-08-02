@@ -7,6 +7,7 @@ function [dispersion_axis,D,eV1, eV2, eV3,mags,T]=intragranularDispersion(e)
 % 17, 2015, doi:10.1130/G36868.1
 
 
+
 % This function performs a principal geodesic analysis on crystallographic
 % orientations extracted from a single grain to identify a grain-scale
 % vorticity vector associated with intragranular crystallographic
@@ -123,6 +124,7 @@ for i=1:L
         end
         
         nrm=sqrt(u^2 + v^2 + w^2);
+%         nrm = 1;
         a=acos(max([-1;cosine]));
         u=[u/nrm v/nrm w/nrm];
         
@@ -159,7 +161,7 @@ T = tensor(cvm);
 value = diag(Diagonal);
 
 % Sort eigen-values in descending order:
-[value,index] = sort(value,'descend');
+[val,index] = sort(value,'descend');
 
 % sort and assign eigenvectors by corresponding eigenvalues
 V1 = real(Vec(:,index(1)));
@@ -167,9 +169,11 @@ V2 = real(Vec(:,index(2)));
 V3 = real(Vec(:,index(3)));
 
 
-% eigenvalue magnitudes:
-% mags=sqrt(value);
-mags = real(sqrt(value));
+% eigenvalue to axes magnitudes:
+% mags = [(sqrt(real(val(1))))
+%         (sqrt(real(val(2))))
+%         (sqrt(real(val(3))))];
+mags = val;
 
 
 
