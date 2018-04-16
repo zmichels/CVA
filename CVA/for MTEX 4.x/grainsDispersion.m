@@ -1,6 +1,5 @@
 function [vorts,bulkVort,D,eV1, eV2, eV3, mags, T]=grainsDispersion(g,ebsd)
 % written by Zachary D. Michels; February, 2015
-% edited 2/23/2018 for compatibility with MTEX 5.0 
 
 %% References
 % Zachary D. Michels, Seth C. Kruckenberg, Joshua R. Davis, and Basil Tikoff
@@ -11,7 +10,7 @@ function [vorts,bulkVort,D,eV1, eV2, eV3, mags, T]=grainsDispersion(g,ebsd)
 
 %% NOTES TO USERS and REFERENCE INFORMATION
 
-% !*** IMPORTANT ***! This function requires MTEX v5.x Some alteration may
+% !*** IMPORTANT ***! This function requires MTEX v4.0 Some alteration may
 % be required for use with subsequent versions of MTEX. However, MOST of
 % the calculations do not require MTEX specific functions (mainly MTEX is
 % used for passing intragranular orientation solutions to the custom
@@ -107,7 +106,7 @@ vorts(intXYZ)=[];
 % Define a kernel density estimation with specified halfwidth. MTEX default
 % uses the de la Vallee Poussin kernel:
 r = plotS2Grid('resolution',0.25*degree,'antipodal');
-kde = calcDensity([vorts -vorts],r,'antipodal','halfwidth',10*degree);
+kde = kernelDensityEstimation([vorts -vorts],r,'antipodal','halfwidth',10*degree);
 [~,I]=max(kde);
 
 % get vector and negated vector (antipodal) of best-fit axis:
