@@ -37,12 +37,16 @@ After you have imported an ebsd dataset and constructed grains, perhaps try the 
 
 condition = grains.grainSize>=3&grains.GOS>=1*degree & grains.phase>0;
 
+
+
 % select the grains
+
 gCVA = grains(condition);
 
 
 
 %% compute orientation dispersion tensor for each grain
+
 [gCVA,bulk] = calcGrainsDispersion(gCVA,ebsd(gCVA));
 
 % NOTE: When you run the analysis, the Matlab terminal will update with "percent done" message to help gage the time left. 
@@ -58,7 +62,9 @@ gCVA = grains(condition);
 % to visualize all of the rotation axes from all of the grains:
 
 figure,
+
 plot(gCVA.CVA,'antipodal','lower','smooth','halfwidth',10*degree)
+
 mtexColorbar('Title','M.U.D.')
 
 
@@ -66,6 +72,7 @@ mtexColorbar('Title','M.U.D.')
 % add the "bulk" vorticity axis -- highest MUD using a KDE with 10-degree halfwidth
 
 hold on
+
 plot(bulk,'antipodal','lower','Marker','^','MarkerSize',15,'MarkerEdgeColor','w','MarkerFaceColor','k')
 
 
@@ -73,7 +80,9 @@ plot(bulk,'antipodal','lower','Marker','^','MarkerSize',15,'MarkerEdgeColor','w'
 % visualize results for grains of a specific phase (ex: 'forsterite')
 
 figure,
+
 plot(gCVA('forsterite').CVA,'antipodal','lower','smooth','halfwidth',10*degree)
+
 mtexColorbar('Title','M.U.D.')
 
 
@@ -88,7 +97,9 @@ Some folks have noted that when applying CVA to samples which do not exhibit muc
 % Plot a filtered version of the CVA data
 
 figure,
+
 plot(gCVA(gCVA.mag1./gCVA.mag2>=1.4).CVA,'antipodal','lower','smooth','halfwidth',10*degree)
+
 mtexColorbar('Title','M.U.D.')
 
 
