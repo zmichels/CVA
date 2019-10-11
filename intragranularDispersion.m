@@ -149,7 +149,7 @@ end
 
 % THIS IS THE COVARIANCE MATRIX
 cvm = cvm / sz;
-T = tensor(cvm);
+T = tensor(cvm,'rank',2);
 %%
 
 %% Rotation Principal Components (Principal Geodesic Analysis)
