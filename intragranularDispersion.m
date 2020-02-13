@@ -55,7 +55,7 @@ function [dispersion_axis,D,eV1, eV2, eV3,mags,T]=intragranularDispersion(e)
 
 %% Extract orientations and mean orientation from grain object
 % all intragranular orientations:
-o=e.orientations;
+o=e.rotations;
 
 %%
 % mean orientation:
