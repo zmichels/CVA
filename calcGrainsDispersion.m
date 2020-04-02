@@ -140,6 +140,6 @@ gCVA.prop.ang2z = angle(gCVA.CVA,zvector,'antipodal')./degree;
 
 gCVA.prop.ind = ones(size(gCVA.CVA));
 
-% Filter
-% gCVA = gCVA((gCVA.mag1./gCVA.mag2)>1.4);
+% remove spurious results
+gCVA = gCVA(gCVA.mag1>0&gCVA.mag2>0&gCVA.mag3>0)
 
