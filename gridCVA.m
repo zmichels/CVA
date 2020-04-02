@@ -1,6 +1,6 @@
 %% GRID CVA
 
-function [CVAgrid, Dgrid, Tgrid, eV1grid, eV2grid, eV3grid, magsgrid, centx, centy, eCVA] = gridCVA_NEW(e,pad)
+function [CVAgrid, Dgrid, Tgrid, eV1grid, eV2grid, eV3grid, magsgrid, centx, centy, eCVA] = gridCVA(e,pad)
 %%
 e = e.gridify;
 
