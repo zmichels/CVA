@@ -1,7 +1,28 @@
 %% GRID CVA
 
-function [CVAgrid, Dgrid, Tgrid, eV1grid, eV2grid, eV3grid, magsgrid, centx, centy, eCVA] = gridCVA(e,pad)
+% This function will perform a sliding-window principal geodesic analysis
+% (CVA) in which the grain boundaries are ignored ? so that only
+% intragranular orientations are considered. This function has been tested
+% to work with MTEX v5.3
+
+% NOTE: The sliding-window approach will take longer than a whole-grain
+% approach due to the increase in analyses that are required. The script
+% includes estimates for remaining time during updates, but these are often
+% incorrect and usually a significant underestimate.
+
+
+function [eCVA] = gridCVA(e,pad,grain)
 %%
+gb = grain.boundary;
+id1 = gb.ebsdId(:,1);
+id2 = gb.ebsdId(:,2);
+
+uIds = unique([id1(:);id2(:)]);
+e.prop.newId = 1:length(e);
+
+e(intersect(e.newId,uIds)) = [];
+
+
 e = e.gridify;
 
 lims = size(e)-1;

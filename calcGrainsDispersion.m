@@ -121,7 +121,8 @@ kde = calcDensity([vorts -vorts],r,'antipodal','halfwidth',10*degree);
 [~,I]=max(kde);
 
 % get vector and negated vector (antipodal) of best-fit axis:
-bulkVort=r(I);
+bulkVort=[r(I),-r(I)];
+bulkVort(bulkVort.z>0) = [];
 
 
 %% Append the grainset
