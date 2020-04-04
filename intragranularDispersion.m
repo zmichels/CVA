@@ -6,7 +6,8 @@ function [dispersion_axis,D,eV1, eV2, eV3,mags,T]=intragranularDispersion(e)
 % crystallographic orientations Geology, G36868.1, first published on July
 % 17, 2015, doi:10.1130/G36868.1
 
-
+% This function has been updated for use with MTEX 5.3. Older versions of
+% MTEX may not be supported.
 
 % This function performs a principal geodesic analysis on crystallographic
 % orientations extracted from a single grain to identify a grain-scale

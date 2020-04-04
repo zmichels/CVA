@@ -1,6 +1,6 @@
 function [ gCVA , bulkVort ]  =  calcGrainsDispersion ( gCVA , eCVA )
 % written by Zachary D. Michels; February, 2015
-% edited 2/23/2018 for compatibility with MTEX 5.0 
+% edited 2/23/2018 for compatibility with MTEX 5.3 
 
 %% References
 % Zachary D. Michels, Seth C. Kruckenberg, Joshua R. Davis, and Basil Tikoff
