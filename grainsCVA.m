@@ -2,27 +2,23 @@ function [gCVA, bulkVort] = grainsCVA(gCVA, eCVA)
 
 % calculate grain average misorientation angle from KAM
 % input:
-%           eCVA:           ebsd (with grainID)
+%      ebsd (with grainID)
 % 
 % 
 %   output:
-%           gCVA:           grainSet appended with CVA/PGA results
-%           bulkVort:       vector3d of preferred CVA axis
+%      gCVA:          grainSet appended with PGA resuls for each grain
 %
 %
 %   usage:
-%           % compute grains
-%           [grains,ebsd.grainId]=calcGrains(ebsd)
-%
-%           % compute CVA
-%           [gCVA, bulkVort] = grainsCVA(ebsd)
+%   [grains,ebsd.grainId]=calcGrains(ebsd)
+%   [eVg, gid] = grainsPGA(ebsd)
 
 
-
-
-%%   check if grainID exists
+%   check if grainID exists
 if isempty(eCVA.grainId)
+     
     error('There is no ebsd.grainId. Run calcGrains first.')
+     
 end
 
 %% Setup: select grains and initialize variables for sake of loops
@@ -33,22 +29,20 @@ eCVA = eCVA(gCVA);
 
 eCVA(eCVA.phase<1) = [];
 
+[gid,~,eindex] = unique(eCVA.grainId);
+
+
 % number of grains:
-numg=length(gCVA)
+numg=length(gid)
 
 % for keeping track of progress in for loop:
 div=round(numg/10);
 count=div;
 
-% preallocate
-mags = zeros(3,numg);
-eVg = [vector3d(nan(3,numg));vector3d(nan(3,numg));vector3d(nan(3,numg))];
-
-
-% anlysis loop
-for n = 1:numg
+%% anlysis loop
+for n = 1:length(gid)
     
-    [eVg(:,n),mags(:,n)] = PGA(eCVA(gCVA(n)).orientations);
+    [eVg(:,n),mags(:,n)] = PGA(eCVA(eindex==n).orientations);
     
     % Keep track of for loop progress and print to consoloe screen:
     perc=round(n/numg*100);
@@ -66,8 +60,6 @@ eVg(eVg.z>0)=-eVg(eVg.z>0);
 eV1 = eVg(1,:);
 %% Try Kernel Density Estimation to get a best fit "bulk" vorticity vector.
 % Define a kernel density estimation with specified halfwidth. MTEX defaul
-
-
 
 % uses the de la Vallee Poussin kernel:
 r = plotS2Grid('resolution',0.25*degree,'antipodal');
@@ -87,7 +79,6 @@ gCVA.prop.eV3 = eVg(3,:);
 gCVA.prop.mag1 = mags(1,:);
 gCVA.prop.mag2 = mags(2,:);
 gCVA.prop.mag3 = mags(3,:);
-
 
 
 end
