@@ -33,10 +33,8 @@ eCVA = eCVA(gCVA);
 
 eCVA(eCVA.phase<1) = [];
 
-[gid,~,eindex] = unique(eCVA.grainId);
-
 % number of grains:
-numg=length(gid)
+numg=length(gCVA)
 
 % for keeping track of progress in for loop:
 div=round(numg/10);
@@ -46,10 +44,11 @@ count=div;
 mags = zeros(3,numg);
 eVg = [vector3d(nan(3,numg));vector3d(nan(3,numg));vector3d(nan(3,numg))];
 
+
 % anlysis loop
-for n = 1:length(gid)
+for n = 1:numg
     
-    [eVg(:,n),mags(:,n)] = PGA(eCVA(eindex==gid(n)).orientations);
+    [eVg(:,n),mags(:,n)] = PGA(eCVA(gCVA(n)).orientations);
     
     % Keep track of for loop progress and print to consoloe screen:
     perc=round(n/numg*100);
