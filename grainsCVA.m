@@ -88,7 +88,7 @@ gCVA.prop.eV3 = eVg(3,:);
 gCVA.prop.mag1 = mags(1,:);
 gCVA.prop.mag2 = mags(2,:);
 gCVA.prop.mag3 = mags(3,:);
-gCVA.tCVA = tCVA;
+
 
 
 end
