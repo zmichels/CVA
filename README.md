@@ -47,7 +47,7 @@ gCVA = grains(condition);
 
 %% compute orientation dispersion tensor for each grain
 
-[gCVA,bulk] = calcGrainsDispersion(gCVA,ebsd(gCVA));
+[gCVA, bulk] = grainsCVA(grains,ebsd)
 
 % NOTE: When you run the analysis, the Matlab terminal will update with "percent done" message to help gage the time left. 
 
@@ -95,6 +95,8 @@ Some folks have noted that when applying CVA to samples which do not exhibit muc
 
 
 % Plot a filtered version of the CVA data
+
+gCVA = gCVA(gCVA.mag1>0);
 
 figure,
 
