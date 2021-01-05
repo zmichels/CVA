@@ -44,7 +44,6 @@ eV1grid = vector3d();
 eV2grid = vector3d();
 eV3grid = vector3d();
 magsgrid=[];
-Tgrid = tensor([0 0 0; 0 0 0; 0 0 0],'rank',2);
 
 stepsInX = size(e,1);
 stepsInY = size(e,2);
@@ -59,41 +58,28 @@ div=round(numg/inc);
 count=div;
 n = 1;
 
+centx = nan(size(1+pad:stepsInX-pad));
+centy = nan(size(1+pad:stepsInY-pad));
 
 % eGrid = e(1+pad:stepsInX-pad,1+pad:stepsInY-pad);
 %%
 tic
 tocInt=toc;
 toc
-for j = 1+pad:stepsInX-pad
-    for k = 1+pad:stepsInY-pad
+for j = length(centx)
+    for k = length(centy)
         eWin = e([j-pad:j+pad],[k-pad:k+pad]);
         if size(eWin(eWin.phase>0),1) >= 3
             
-            [CVAgrid(i),Dgrid(i),eV1grid(i), eV2grid(i), eV3grid(i),magsgrid(:,i),t]=intragranularDispersion(eWin(eWin.phase>0));
-            if magsgrid(1,i)>0
+            [eV,mags] = PGA(eWin(eWin.phase>0).orientations);
+            if mags(1,i)>0
             centx(i)= e(j,k).x;
             centy(i) = e(j,k).y;
-            Tgrid(i) = t;
             magsgrid=real(magsgrid);
             id(i) = e(j,k).id;
             i = i+1;
             
             end
-            
-            
-          
-        else
-            %             CVA(i) = vector3d(NaN, NaN, NaN);
-            %             eV1(i) = vector3d(NaN, NaN, NaN);
-            %             eV2(i) = vector3d(NaN, NaN, NaN);
-            %             eV3(i) = vector3d(NaN, NaN, NaN);
-            %             D(i) = rotation('Euler',0, 0, 0);
-            %             T(i) = tensor([NaN NaN NaN; NaN NaN NaN; NaN NaN NaN]);
-            %             centx(i)= e(j,k).x;
-            %             centy(i) = e(j,k).y;
-            %             mags(:,i) = [0; 0; 0];
-            %             i = i+1;
         end
         
         % Keep track of for loop progress and print to consoloe screen:
@@ -111,19 +97,24 @@ for j = 1+pad:stepsInX-pad
         end
         n = n+1;
     end
+    
+    
+    % project to lower hemisphere
+    eV(eV.z>0)=-eV(eV.z>0);
+
+
+    eV1 = eV(1,:);
+
+
     eCVA = e(id);
-    eCVA.prop.CVA = CVAgrid;
-    eCVA.prop.eV1 = eV1grid;
-    eCVA.prop.eV2 = eV2grid;
-    eCVA.prop.eV3 = eV3grid;
-    eCVA.prop.D = Dgrid;
-    eCVA.prop.T = Tgrid;
+    eCVA.prop.CVA = eV1;
+    eCVA.prop.eV1 = eV1;
+    eCVA.prop.eV2 = eV(2,:);
+    eCVA.prop.eV3 = eV(3,:);
     eCVA.prop.mag1 = magsgrid(1,:);
     eCVA.prop.mag2 = magsgrid(2,:);
     eCVA.prop.mag3 = magsgrid(3,:);
     eCVA.prop.centx = centx;
     eCVA.prop.centy = centy;
     
-    % remove any spurious results
-    eCVA = eCVA(eCVA.mag1>0&eCVA.mag2>0&eCVA.mag3>0);
 end
