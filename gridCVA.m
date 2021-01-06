@@ -1,14 +1,22 @@
 %% GRID CVA
 
-% This function will perform a sliding-window principal geodesic analysis
-% (CVA) in which the grain boundaries are ignored ? so that only
-% intragranular orientations are considered. This function has been tested
-% to work with MTEX v5.3
+% This function will perform principal geodesic analysis of 3x3 kernels for
+% a single phase
 
-% NOTE: The sliding-window approach will take longer than a whole-grain
-% approach due to the increase in analyses that are required. The script
-% includes estimates for remaining time during updates, but these are often
-% incorrect and usually a significant underestimate.
+
+% input:
+%         ebsd
+% 
+% 
+% output:
+%         cva:      vector3d of PGA eigenvectors (cva)
+%         mag:      eigenvalue of eigenvectors
+%         eId:      ids of ebsd at center of 3x3 window
+%
+%
+% example usage:
+% mtexdata forsterite
+% [cva,mag,bv,eId] = gridCVA(ebsd('f'))
 
 
 function [cva,mag,bv,eId] = gridCVA(ePhase)

@@ -1,12 +1,12 @@
 function [gCVA, bulkVort] = grainsCVA(gCVA, eCVA)
 
-% calculate grain average misorientation angle from KAM
+% calculate CVA for grains
 % input:
 %      ebsd (with grainID)
 % 
 % 
 %   output:
-%      gCVA:          grainSet appended with PGA resuls for each grain
+%      gCVA:          grainSet appended with CVA resuls for each grain
 %
 %
 %   usage:
