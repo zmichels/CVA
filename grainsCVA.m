@@ -33,19 +33,25 @@ eCVA(eCVA.phase<1) = [];
 
 
 % number of grains:
-numg=length(gid)
+num=length(gid);
 
 % for keeping track of progress in for loop:
-div=round(numg/10);
+div=round(num/10);
 count=div;
 
+% pre-allocate
+eVg = [vector3d(nan(3,num));vector3d(nan(3,num));vector3d(nan(3,num))];
+mags = nan(3,num);
+
 %% anlysis loop
+fprintf('\n\n%i grains\n\n',num)
+
 for n = 1:length(gid)
     
     [eVg(:,n),mags(:,n)] = PGA(eCVA(eindex==n).orientations);
     
     % Keep track of for loop progress and print to consoloe screen:
-    perc=round(n/numg*100);
+    perc=round(n/num*100);
         if n==count            
             fprintf('\n\n%i percent done...\n\n',perc)
             count=count+div;
