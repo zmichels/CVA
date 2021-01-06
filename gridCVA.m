@@ -1,25 +1,45 @@
-%% GRID CVA
-
-% This function will perform principal geodesic analysis of 3x3 kernels for
-% a single phase
-
-
+% This function will perform principal geodesic analysis (PGA) of [3 x 3]
+% kernels for a single phase. This analysis is similar to the grain-scale
+% crystallographic vorticity axis (CVA) analysis, except that instead of
+% using sets of orientations in whole grains, it uses a [3 x 3] window, and
+% it is only applied to a single phase at a time. 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% References:
+% Zachary D. Michels, Seth C. Kruckenberg, Joshua R. Davis, and Basil Tikoff
+% Determining vorticity axes from grain-scale dispersion of
+% crystallographic orientations Geology, G36868.1, first published on July
+% 17, 2015, doi:10.1130/G36868.1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % input:
-%         ebsd
-% 
+%        ePhase:
 % 
 % output:
-%         cva:      vector3d of PGA eigenvectors (cva)
-%         mag:      eigenvalue of eigenvectors
-%         eId:      ids of ebsd at center of 3x3 window
+%            eV:      PGA eigenvectors as vector3d  ––  eV(1,:) = cva
+%          mags:      Eigenvalue of eigenvectors    ––  mags(1,:) for cva's
+%            bv:      Preferred cva direction as vector3d
+%           eId:      ids of ebsd at center of 3x3 window
 %
 %
 % example usage:
+%
+% % load some data
 % mtexdata forsterite
-% [cva,mag,bv,eId] = gridCVA(ebsd('f'))
+%
+% % compute the kernel CVA analysis
+% [eV,mags,bv,eId] = gridCVA(ebsd('f'))
+%
+% % plot results and best-fit/preferred cva vector
+% figure,
+% plot(eV(1,:),'antipodal','lower','smooth')
+% hold on
+% plot(bv,'antipodal','lower','Marker','^','MarkerSize',10,...
+%     'MarkerFaceColor','k','MarkerEdgeColor','w')
 
 
-function [cva,mag,bv,eId] = gridCVA(ePhase)
+%%
+function [eV,mags,bv,eId] = gridCVA(ePhase)
 %%
 
 % gridify
@@ -87,26 +107,26 @@ end
 eV(eV.z>0)=-eV(eV.z>0);
 
 %% Handle results
-% assign 'cva' from eignevector results
-cva = eV(1,:);
-
-% and mags
-mag = mags(1,:);
+% % assign 'cva' from eignevector results
+% eV1 = eV(1,:);
+% 
+% % and mags
+% mag = mags(1,:);
 
 % identify null solutions
-cond = (norm(cva)==0 | isnan(mag));
+cond = (norm(eV(1,:))==0 | isnan(mags(1,:)));
 
 % apply condition
-cva(cond) = [];
+eV(:,cond) = [];
 eId(cond) = [];
-mag(cond) = [];
+mags(:,cond) = [];
 
-%% Try Kernel Density Estimation to get a best fit "bulk" vorticity vector.
-% Define a kernel density estimation with specified halfwidth. MTEX defaul
-
+%% Kernel Density Estimation to get a best fit "bulk" vorticity vector.
+% Define a kernel density estimation with specified halfwidth. MTEX default
 % uses the de la Vallee Poussin kernel:
+
 r = plotS2Grid('resolution',0.25*degree,'antipodal');
-kde = calcDensity([cva -cva],r,'antipodal','halfwidth',10*degree);
+kde = calcDensity([eV(1,:) -eV(1,:)],r,'antipodal','halfwidth',10*degree);
 [~,I]=max(kde);
 
 % get vector and negated vector (antipodal) of best-fit axis:
