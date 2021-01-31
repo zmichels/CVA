@@ -41,37 +41,17 @@ function [eV,mags] = PGA(ori)
 
 %% 
 
+oriRef = mean(ori);
+
 % compute the projection of orientations onto the three dimensional
 % tangential space centered about the mean
-t = log(ori, mean(ori),'left');
+t = log(ori, oriRef,'left');
 
-% covariance matrix
-cvm = t*t';
+% eigenvector of the covariance matrix
+[eV, mags] = eig3(t * t);
 
-
-%%
-% eigenvector analysis of the rotation covariance matrix:
-[Vec,Diagonal] = eig(cvm);
-
-% eigen-values : convert diagonal matrix to vector of eigen values:
-value = diag(Diagonal);
-
-% Sort eigen-values in descending order:
-[val,index] = sort(value,'descend');
-
-% sort and assign eigenvectors by corresponding eigenvalues
-V1 = (Vec(:,index(1)));
-V2 = (Vec(:,index(2)));
-V3 = (Vec(:,index(3)));
-
-
-% eigenvalue to axes magnitudes:
-mags = val;
-
-% sorted eigenvector directions:
-dirs = [V1, V2, V3];
-
-% sorted eigenvector vector3d objects for output:
-eV = normalize(vector3d(mags'.*dirs));
+%% sort largest first for compatibility with previous versions
+eV = flipud(eV);
+mags = flipud(mags);
 
 end
