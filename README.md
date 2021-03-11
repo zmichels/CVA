@@ -35,16 +35,6 @@ After you have imported an ebsd dataset and constructed grains, perhaps try the 
 
 
 
-condition = grains.grainSize>=3&grains.GOS>=1*degree & grains.phase>0;
-
-
-
-% select the grains
-
-gCVA = grains(condition);
-
-
-
 %% compute orientation dispersion tensor for each grain
 
 [gCVA, bulk] = grainsCVA(grains,ebsd)
