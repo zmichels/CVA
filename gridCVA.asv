@@ -88,25 +88,25 @@ count=div;
 % pre-allocate
 eV = [vector3d(nan(3,num));vector3d(nan(3,num));vector3d(nan(3,num))];
 mags = nan(3,num);
-kos = nan(size(eId));
-kax = [vector3d(nan(3,num));vector3d(nan(3,num));vector3d(nan(3,num))];
+kos = zeros(size(eId));
+kax = zeros(size(eId));
 
 %% analysis loop
 fprintf('\n\n%i kernels\n\n',num)
 
 for n = 1:num
-    
     o = oMat(:,:,n);
     o = o(~isnan(o(:)));
-   
-    if length(o)>2 && max(angle(o,mean(o)))>.01*degree
+    
+    % kernel orientation spread (KOS - like mis2mean for kernel)
+    kos(n) = max(angle(o,mean(o)));
+    
+    % kernel mean KOS axis
+    kax(n) = mean(axis(o,mean(o)));
+    
+    if length(o)>2 && kos(n)>.01*degree
         
         [eV(:,n),mags(:,n)] = PGA(o);
-        
-        % kernel orientation spread (KOS - like mis2mean for kernel)
-        kos(n) = max(angle(o,mean(o)));
-        % kernel mean KOS axis
-         kax(n) = mean(axis(o,mean(o)));
 
     end
     
@@ -121,15 +121,6 @@ end
 % project to lower hemisphere
 eV(eV.z>0)=-eV(eV.z>0);
 
-%% append ebsd variable
-eCVA = ePhase(eId);
-eCVA.prop.CVA = eV(1,:);
-eCVA.prop.eV1 = eV(1,:);
-eCVA.prop.eV2 = eV(2,:);
-eCVA.prop.eV3 = eV(3,:);
-eCVA.prop.mags = mags;
-eCVA.prop.kos = kos;
-
 %% Handle results
 % % assign 'cva' from eignevector results
 % eV1 = eV(1,:);
@@ -141,7 +132,6 @@ eCVA.prop.kos = kos;
 cond = (norm(eV(1,:))==0 | isnan(mags(1,:)) | isnan(eV(1,:)));
 
 % apply condition
-eCVA(cond) = [];
 % eV(:,cond) = [];
 % eId(cond) = [];
 % mags(:,cond) = [];
@@ -161,4 +151,7 @@ bv=[r(I),-r(I)];
 bv(bv.z>0) = [];
 
 
+
+
+eCVA(cond) = [];
 end
