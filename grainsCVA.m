@@ -38,7 +38,7 @@
 %     'MarkerFaceColor','k','MarkerEdgeColor','w')
 
 
-function [grains, bv] = grainsCVA(grains, ebsd)
+function [gCVA, bv] = grainsCVA(gCVA, ebsd)
 
 % check if grainID exists
 if isempty(ebsd.grainId)
@@ -48,9 +48,9 @@ if isempty(ebsd.grainId)
 end
 
 %% Setup: select grains and initialize variables for sake of loops
-grains = grains('indexed');
-grains = grains(grains.grainSize>=3&grains.GOS>0.01*degree);
-ebsd = ebsd(grains);
+gCVA = gCVA('indexed');
+gCVA = gCVA(gCVA.grainSize>=3&gCVA.GOS>0.01*degree);
+ebsd = ebsd(gCVA);
 
 
 ebsd(ebsd.phase<1) = [];
@@ -103,13 +103,17 @@ bv(bv.z>0) = [];
 
 
 %% Append the grainset
-grains.prop.CVA = eVg(1,:);
-grains.prop.eV1 = eVg(1,:);
-grains.prop.eV2 = eVg(2,:);
-grains.prop.eV3 = eVg(3,:);
-grains.prop.mag1 = mags(1,:);
-grains.prop.mag2 = mags(2,:);
-grains.prop.mag3 = mags(3,:);
+gCVA.prop.CVA = eVg(1,:);
+gCVA.prop.eV1 = eVg(1,:);
+gCVA.prop.eV2 = eVg(2,:);
+gCVA.prop.eV3 = eVg(3,:);
+gCVA.prop.mag1 = mags(1,:);
+gCVA.prop.mag2 = mags(2,:);
+gCVA.prop.mag3 = mags(3,:);
 
+%% CVA inversion to crystal reference frame
+gCVA.prop.inv_CVA = round(gCVA.meanOrientation.\gCVA.CVA);
+gCVA.prop.inv_eV2 = round(gCVA.meanOrientation.\gCVA.eV2);
+gCVA.prop.inv_eV3 = round(gCVA.meanOrientation.\gCVA.eV3);
 
 end

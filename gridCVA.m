@@ -2,7 +2,7 @@
 % kernels for a single phase. This analysis is similar to the grain-scale
 % crystallographic vorticity axis (CVA) analysis, except that instead of
 % using sets of orientations in whole grains, it uses a [3 x 3] window, and
-% it is only applied to a single phase at a time. 
+% it is only applied to a single phase at a time.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % References:
@@ -13,9 +13,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % input:
-%        ePhase:
-% 
+%        ebsd:
+%
 % output:
+%        eCVA (EBSD variable appended with PGA results, such as the
+%        following):
+%
 %            eV:      PGA eigenvectors as vector3d  ––  eV(1,:) = cva
 %          mags:      Eigenvalue of eigenvectors    ––  mags(1,:) for cva's
 %            bv:      Preferred cva direction as vector3d
@@ -25,28 +28,56 @@
 % example usage:
 %
 % % load some data
+
 % mtexdata forsterite
 %
-% % compute the kernel CVA analysis
-% [eV,mags,bv,eId] = gridCVA(ebsd('f'))
+% % compute the kernel CVA analysis (use either of the following syntax)
+% [eCVA,bv] = gridCVA(ebsd)            % all points
+% [eCVA,bv] = gridCVA(ebsd, grains)    % excluding points adjacent to
+%                                             grain boundaries
+%
 %
 % % plot results and best-fit/preferred cva vector
 % figure,
-% plot(eV(1,:),'antipodal','lower','smooth')
+% plot(eCVA.CVA,'antipodal','lower','smooth')
 % hold on
 % plot(bv,'antipodal','lower','Marker','^','MarkerSize',10,...
 %     'MarkerFaceColor','k','MarkerEdgeColor','w')
 
 
 %%
-function [eCVA,bv] = gridCVA(ePhase)
+function [eCVA,bv] = gridCVA(ebsd,varargin)
+%%
+narginchk(1,2)
+nargin;
+varargin;
+grains = [varargin{1}];
+
+if nargin > 1
+    % check if grainID exists
+    if isempty(ebsd.grainId)
+        
+        error('There is no ebsd.grainId. Run calcGrains first.')
+        
+    end
+    
+    % get ebsd IDs at grain on either side of grain boundaries
+    eId = grains.boundary.ebsdId(:);
+    
+    % remove any zeros
+    eId(eId==0)=[];
+    
+    % remove the identified pixels from the dataset
+    ebsd('id',eId) = [];
+end
+
 %%
 
 % gridify
-ePhase = ePhase.gridify;
+egrid = ebsd('indexed').gridify;
 
 % ebsd ids in grid/matrix
-ids = ePhase.id;
+ids = egrid.id;
 
 % size of matrix
 [a1,b1] = size(ids);
@@ -61,104 +92,121 @@ col = 2:1:max(b1)-1;
 inds = ids(2:a1-1,2:b1-1);
 eId = inds(:);
 
+phases = unique(egrid('indexed').phase);
+
 %% initialize window
 num = length(eId);
+
 win1 = zeros(w,w,num);
 
 for s = 1:num
-% s = 1;
-c = inds(s);
-
-win1(:,:,s) =   [c-a1-1  c-1 c+a1-1;
-                c-a1    c   c+a1;
-                c-a1+1  c+1 c+a1+1];
-
+    % s = 1;
+    c = inds(s);
+    
+    win1(:,:,s) =   [   c-a1-1     c-1    c+a1-1;
+        
+                        c-a1       c      c+a1;
+                     
+                        c-a1+1     c+1    c+a1+1   ];
+                 
+    
 end
 
-%% assign orientations
-oMat = ePhase(win1).orientations;
 
 
-%%
+%% assign rotations
+oRot = egrid(win1).rotations;
+pID = egrid(win1).phase;
+CSList = egrid.CSList;
+mineralList = egrid.mineralList;
 
-% for keeping track of progress in for loop:
-div=round(num/10);
-count=div;
-
-% pre-allocate
-eV = [vector3d(nan(3,num));vector3d(nan(3,num));vector3d(nan(3,num))];
+%% pre-allocate
+eV = [vector3d.nan;vector3d.nan;vector3d.nan];
 mags = nan(3,num);
 kos = nan(size(eId));
-kax = [vector3d(nan(3,num));vector3d(nan(3,num));vector3d(nan(3,num))];
+kax = vector3d.nan;
+meanO = orientation.nan(num,1);
+
 
 %% analysis loop
-fprintf('\n\n%i kernels\n\n',num)
+% for keeping track of progress in for loop:
+div=round(num/20);
+count=div;
+
+fprintf('\n%i kernels\n',num)
+fprintf('\n%i%% done\n',0)
 
 for n = 1:num
     
-    o = oMat(:,:,n);
+    pInd = pID(:,:,n)==pID(2,2,n)&pID(:,:,n)>0;
+    o = oRot(pInd(1,:),pInd(:,1),n);
     o = o(~isnan(o(:)));
-   
+%     o = orientation(o,CSList(pID(2,2,n)+1),mineralList(pID(2,2,n)+1));
+    
     if length(o)>2 && max(angle(o,mean(o)))>.01*degree
         
         [eV(:,n),mags(:,n)] = PGA(o);
         
+        % kernel mean orientation
+        meanO(n) = orientation(mean(o),CSList(pID(2,2,n)+1),mineralList(pID(2,2,n)+1));
         % kernel orientation spread (KOS - like mis2mean for kernel)
         kos(n) = max(angle(o,mean(o)));
         % kernel mean KOS axis
-         kax(n) = mean(axis(o,mean(o)));
-
+        kax(n) = mean(axis(o,mean(o)));
+     
     end
-    
     % Keep track of for loop progress and print to consoloe screen:
-    perc=round(n/num*100);
+        perc=round(n/num*100);
         if n==count            
-            fprintf('\n\n%i percent done...\n\n',perc)
+            fprintf('\n%i%% done...\n',perc)
             count=count+div;
         end
+
 end
 
 % project to lower hemisphere
 eV(eV.z>0)=-eV(eV.z>0);
 
+
 %% append ebsd variable
-eCVA = ePhase(eId);
+eCVA = egrid(eId);
 eCVA.prop.CVA = eV(1,:);
 eCVA.prop.eV1 = eV(1,:);
 eCVA.prop.eV2 = eV(2,:);
 eCVA.prop.eV3 = eV(3,:);
-eCVA.prop.mags = mags;
+eCVA.prop.mag1 = mags(1,:);
+eCVA.prop.mag2 = mags(2,:);
+eCVA.prop.mag3 = mags(3,:);
 eCVA.prop.kos = kos;
+eCVA.prop.kax = kax;
+eCVA.prop.meanO = meanO;
+
 
 %% Handle results
-% % assign 'cva' from eignevector results
-% eV1 = eV(1,:);
-% 
-% % and mags
-% mag = mags(1,:);
-
 % identify null solutions
-cond = (norm(eV(1,:))==0 | isnan(mags(1,:)) | isnan(eV(1,:)));
+cond = (norm(eCVA.CVA)==0 | isnan(eCVA.mag1) | isnan(eCVA.CVA) | isnan(eCVA.kax));
 
 % apply condition
 eCVA(cond) = [];
-% eV(:,cond) = [];
-% eId(cond) = [];
-% mags(:,cond) = [];
-% kos(cond) = [];
-% kax(cond) = [];
+
 
 %% Kernel Density Estimation to get a best fit "bulk" vorticity vector.
 % Define a kernel density estimation with specified halfwidth. MTEX default
 % uses the de la Vallee Poussin kernel:
 
 r = plotS2Grid('resolution',0.25*degree,'antipodal');
-kde = calcDensity([eV(1,:) -eV(1,:)],r,'antipodal','halfwidth',10*degree);
+kde = calcDensity([eCVA.CVA -eCVA.CVA],r,'antipodal','halfwidth',10*degree);
 [~,I]=max(kde);
 
 % get vector and negated vector (antipodal) of best-fit axis:
 bv=[r(I),-r(I)];
 bv(bv.z>0) = [];
+
+
+%% CVA inversion to crystal reference frame
+eCVA.prop.inv_CVA = round(eCVA.meanO.\eCVA.CVA);
+eCVA.prop.inv_eV2 = round(eCVA.meanO.\eCVA.eV2);
+eCVA.prop.inv_eV3 = round(eCVA.meanO.\eCVA.eV3);
 
 
 end
