@@ -112,8 +112,12 @@ gCVA.prop.mag2 = mags(2,:);
 gCVA.prop.mag3 = mags(3,:);
 
 %% CVA inversion to crystal reference frame
-gCVA.prop.inv_CVA = round(gCVA.meanOrientation.\gCVA.CVA);
-gCVA.prop.inv_eV2 = round(gCVA.meanOrientation.\gCVA.eV2);
-gCVA.prop.inv_eV3 = round(gCVA.meanOrientation.\gCVA.eV3);
+phases = unique(gCVA.phase);
+
+for j = 1:length(phases)
+    pInd = gCVA.phase==phases(j);
+gCVA(pInd).prop.inv_CVA = round(gCVA(pInd).meanOrientation.\gCVA(pInd).CVA');
+gCVA(pInd).prop.inv_eV2 = round(gCVA(pInd).meanOrientation.\gCVA(pInd).eV2');
+gCVA(pInd).prop.inv_eV3 = round(gCVA(pInd).meanOrientation.\gCVA(pInd).eV3');
 
 end
