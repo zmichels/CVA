@@ -111,3 +111,23 @@ gCVA.prop.mag1 = mags(1,:);
 gCVA.prop.mag2 = mags(2,:);
 gCVA.prop.mag3 = mags(3,:);
 
+%% CVA inversion to crystal reference frame
+phases = unique(gCVA.phase);
+CSList = gCVA.CSList;
+
+% initialize inverted CVA variables
+inv_CVA = Miller.zeros(1,num);
+inv_eV2 = Miller.zeros(1,num);
+inv_eV3 = Miller.zeros(1,num);
+
+% initialize crystal symmetry variable
+CSall = cell(size(inv_CVA));
+
+for j = 1:length(phases)
+    pInd = gCVA.phase==phases(j);
+inv_CVA(pInd) = round(gCVA(pInd).meanOrientation.\gCVA(pInd).CVA');
+inv_eV2(pInd) = round(gCVA(pInd).meanOrientation.\gCVA(pInd).eV2');
+inv_eV3(pInd) = round(gCVA(pInd).meanOrientation.\gCVA(pInd).eV3');
+CSall(pInd) = CSList{
+
+end

@@ -203,10 +203,5 @@ bv=[r(I),-r(I)];
 bv(bv.z>0) = [];
 
 
-%% CVA inversion to crystal reference frame
-eCVA.prop.inv_CVA = round(eCVA.meanO.\eCVA.CVA);
-eCVA.prop.inv_eV2 = round(eCVA.meanO.\eCVA.eV2);
-eCVA.prop.inv_eV3 = round(eCVA.meanO.\eCVA.eV3);
-
 
 end
