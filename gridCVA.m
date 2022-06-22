@@ -125,7 +125,7 @@ eV = [vector3d.nan;vector3d.nan;vector3d.nan];
 mags = nan(3,num);
 kos = nan(size(eId));
 kax = vector3d.nan;
-meanO = orientation.nan(num,1);
+meanRotation = orientation.nan(num,1);
 
 
 %% analysis loop
@@ -139,20 +139,20 @@ fprintf('\n%i%% done\n',0)
 for n = 1:num
     
     pInd = pID(:,:,n)==pID(2,2,n)&pID(:,:,n)>0;
-    o = oRot(pInd(1,:),pInd(:,1),n);
-    o = o(~isnan(o(:)));
+    rots = oRot(pInd(1,:),pInd(:,1),n);
+    rots = rots(~isnan(rots(:)));
 %     o = orientation(o,CSList(pID(2,2,n)+1),mineralList(pID(2,2,n)+1));
     
-    if length(o)>2 && max(angle(o,mean(o)))>.01*degree
+    if length(rots)>2 && max(angle(rots,mean(rots)))>.01*degree
         
-        [eV(:,n),mags(:,n)] = PGA(o);
+        [eV(:,n),mags(:,n)] = PGA(rots);
         
         % kernel mean orientation
-        meanO(n) = orientation(mean(o),CSList(pID(2,2,n)+1),mineralList(pID(2,2,n)+1));
+        meanRotation(n) = mean(rots);
         % kernel orientation spread (KOS - like mis2mean for kernel)
-        kos(n) = max(angle(o,mean(o)));
+        kos(n) = max(angle(rots,mean(rots)));
         % kernel mean KOS axis
-        kax(n) = mean(axis(o,mean(o)));
+        kax(n) = mean(axis(rots,mean(rots)));
      
     end
     % Keep track of for loop progress and print to consoloe screen:
@@ -179,7 +179,8 @@ eCVA.prop.mag2 = mags(2,:);
 eCVA.prop.mag3 = mags(3,:);
 eCVA.prop.kos = kos;
 eCVA.prop.kax = kax;
-eCVA.prop.meanO = meanO;
+eCVA.prop.meanRotation = meanRotation;
+
 
 
 %% Handle results
@@ -201,7 +202,6 @@ kde = calcDensity([eCVA.CVA -eCVA.CVA],r,'antipodal','halfwidth',10*degree);
 % get vector and negated vector (antipodal) of best-fit axis:
 bv=[r(I),-r(I)];
 bv(bv.z>0) = [];
-
 
 
 end
