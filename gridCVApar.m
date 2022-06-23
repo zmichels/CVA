@@ -137,12 +137,9 @@ pool = parpool('local',availableGPUs);
 end
 
 %% analysis loop
-% for keeping track of progress in for loop:
-div=round(num/20);
-count=div;
 
 fprintf('\n%i kernels\n',num)
-% fprintf('\n%i%% done\n',0)
+
 
 WaitMessage = parfor_wait(num,'Waitbar',true);
 
