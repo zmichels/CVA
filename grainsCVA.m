@@ -68,13 +68,14 @@ count=div;
 % pre-allocate
 eVg = [vector3d(nan(3,num));vector3d(nan(3,num));vector3d(nan(3,num))];
 mags = nan(3,num);
+T = repmat(tensor(nan(3,3),'rank',2),[num,1]);
 
 %% anlysis loop
 fprintf('\n\n%i grains\n\n',num)
 
 for n = 1:length(gid)
     
-    [eVg(:,n),mags(:,n)] = PGA(ebsd(eindex==n).orientations);
+    [eVg(:,n),mags(:,n),T(n)] = PGA(ebsd(eindex==n).orientations);
     
     % Keep track of for loop progress and print to consoloe screen:
     perc=round(n/num*100);
@@ -110,4 +111,4 @@ gCVA.prop.eV3 = eVg(3,:);
 gCVA.prop.mag1 = mags(1,:);
 gCVA.prop.mag2 = mags(2,:);
 gCVA.prop.mag3 = mags(3,:);
-
+gCVA.prop.cvaTensors = T;

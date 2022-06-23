@@ -1,4 +1,4 @@
-function [eV,mags] = PGA(ori)
+function [eV,mags,T] = PGA(ori)
 
 %% P.G.A. – Principal Geodesic Analysis
 
@@ -47,11 +47,17 @@ oriRef = mean(ori);
 % tangential space centered about the mean
 t = log(ori, oriRef,'left');
 
-% eigenvector of the covariance matrix
-[eV, mags] = eig3(t * t);
+% covariance matrix as tensor
+T = tensor(t*t,'rank',2);
+
+% eigenvector of the tensor
+[eV, mags] = eig(T);
+
 
 %% sort largest first for compatibility with previous versions
-eV = flipud(eV);
-mags = flipud(mags);
+[~,ind] = sort (mags,'descend');
+
+eV = eV(ind);
+mags = mags(ind);
 
 end

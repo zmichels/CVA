@@ -46,7 +46,7 @@
 
 
 %%
-function [eCVA,bv] = gridCVA(ePhase,varargin)
+function [eCVA,bv] = gridCVApar(ePhase,varargin)
 
 
 %%
@@ -130,59 +130,66 @@ meanRotation = orientation.nan(num,1);
 T = repmat(tensor(nan(3,3),'rank',2),[num,1]);
 
 
+%% parpool setup
+if isempty(gcp('nocreate'))
+availableGPUs = gpuDeviceCount("available");
+pool = parpool('local',availableGPUs);
+end
+
 %% analysis loop
 % for keeping track of progress in for loop:
 div=round(num/20);
 count=div;
 
 fprintf('\n%i kernels\n',num)
-fprintf('\n%i%% done\n',0)
+% fprintf('\n%i%% done\n',0)
 
-for n = 1:num
-    
+WaitMessage = parfor_wait(num,'Waitbar',true);
+
+parfor n = 1:num
+    WaitMessage.Send;
     pInd = pID(:,:,n)==pID(2,2,n)&pID(:,:,n)>0;
     rots = oRot(pInd(1,:),pInd(:,1),n);
     rots = rots(~isnan(rots(:)));
-%     o = orientation(o,CSList(pID(2,2,n)+1),mineralList(pID(2,2,n)+1));
-    
+
     if length(rots)>2 && max(angle(rots,mean(rots)))>.01*degree
         
-        [eV(:,n),mags(:,n),T(n)] = PGA(rots);
-        
-        % kernel mean orientation
-        meanRotation(n) = mean(rots);
-        % kernel orientation spread (KOS - like mis2mean for kernel)
-        kos(n) = max(angle(rots,mean(rots)));
-        % kernel mean KOS axis
-        kax(n) = mean(axis(rots,mean(rots)));
+        [eV(:,n),mags(:,n),T(n,:)] = PGA(rots);
      
+        % kernel mean orientation
+        meanRotation(n,:) = mean(rots);
+        % kernel orientation spread (KOS - like mis2mean for kernel)
+        kos(n,:) = max(angle(rots,mean(rots)));
+        % kernel mean KOS axis
+        kax(n,:) = mean(axis(rots,mean(rots)));
+        
     end
-    % Keep track of for loop progress and print to consoloe screen:
-        perc=round(n/num*100);
-        if n==count            
-            fprintf('\n%i%% done...\n',perc)
-            count=count+div;
-        end
+%     % Keep track of for loop progress and print to consoloe screen:
+%         perc=round(n/num*100);
+%         if n==count            
+%             fprintf('\n%i%% done...\n',perc)
+%             count=count+div;
+%         end
 
 end
-
+WaitMessage.Destroy
 % project to lower hemisphere
 eV(eV.z>0)=-eV(eV.z>0);
 
 
 %% append ebsd variable
 eCVA = egrid(eId);
-eCVA.prop.CVA = eV(1,:);
-eCVA.prop.eV1 = eV(1,:);
-eCVA.prop.eV2 = eV(2,:);
-eCVA.prop.eV3 = eV(3,:);
-eCVA.prop.mag1 = mags(1,:);
-eCVA.prop.mag2 = mags(2,:);
-eCVA.prop.mag3 = mags(3,:);
-eCVA.prop.kos = kos;
-eCVA.prop.kax = kax;
-eCVA.prop.meanRotation = meanRotation;
-eCVA.prop.cvaTensors = T;
+eCVA.prop.CVA           = eV(1,:);
+eCVA.prop.eV1           = eV(1,:);
+eCVA.prop.eV2           = eV(2,:);
+eCVA.prop.eV3           = eV(3,:);
+eCVA.prop.mag1          = mags(1,:);
+eCVA.prop.mag2          = mags(2,:);
+eCVA.prop.mag3          = mags(3,:);
+eCVA.prop.kos           = kos;
+eCVA.prop.kax           = kax;
+eCVA.prop.meanRotation  = meanRotation;
+eCVA.prop.cvaTensors    = T;
 
 
 
@@ -206,5 +213,6 @@ kde = calcDensity([eCVA.CVA -eCVA.CVA],r,'antipodal','halfwidth',10*degree);
 bv=[r(I),-r(I)];
 bv(bv.z>0) = [];
 
-
+%% close / delete parpool
+delete(pool)
 end
