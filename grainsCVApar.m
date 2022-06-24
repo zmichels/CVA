@@ -69,8 +69,8 @@ T = repmat(tensor(nan(3,3),'rank',2),[num,1]);
 
 %% parpool setup
 if isempty(gcp('nocreate'))
-availableGPUs = gpuDeviceCount("available");
-pool = parpool('local',availableGPUs);
+% availableGPUs = gpuDeviceCount("available");
+pool = parpool('local',8);
 end
 
 %% anlysis loop
