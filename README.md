@@ -2,15 +2,18 @@
 
 Code for Crystallographic Vorticity Axis analysis
 
+
 The provided code snippets and functions can be run in MATLAB and are written to
 leverage functionality from the open source toolbox, MTEX, v5.X+ and (which
 provides tools for importing EBSD data and constructing GrainSet objects). Some
 details about the CVA method (and appropriate references) are provided in
 comments within the functions.
 
-Please contact Z.Michels (mich0201@umn.edu) with any questions or for consultation and feel free to modify these functions as allowed by the MIT open source license guidelines.
+
+Please contact Z.Michels (zacharymichels@arizona.edu) with any questions or for consultation and feel free to modify these functions as allowed by the MIT open source license guidelines.
 Additionally, older versions of the code are available for use with earlier versions of MTEX upon request; however, these have been removed from the repository and are no
 longer being maintained. Occasionally users may find that updating to new MTEX versions results in an error with functions here -- this can happen when the MTEX functions change in new versions. In such a case, please return to this repository to check for an update that will work with latest MTEX (I check compatibility with every MTEX release, and update the scripts, if needed, immediately).
+
 
 
 REFERENCES:
@@ -23,21 +26,30 @@ crystallographic orientations, Geology, G36868.1, first published on July 17,
 
 # Example application or workflow
 
+
 After you have imported an ebsd dataset and constructed grains, perhaps try the following workflow example as a starting point.
 
+1. Isolate a set of grains that are appropriate for CVA analysis by creating an index of grains that match conditions suitable for CVA analysis.
 
-%% Isolate a set of grains that are appropriate for CVA analysis
-% create an index of grains that match parameters that will allow for CVA
-% analysis:
-% grainSize >= 3    --  grains with 3 or more solutions
-% GOS               --  grain orientation spread of 1 degree or more
-% phase > 0         --  only grains with indexed data (not-indexed = 0).
+        a. grainSize >= 3  --  grains with 3 or more solutions -- grains(grains.grainSize>=3)
+    
+        b. GOS >= 1-degree --  grains with an orientation spread of 1 degree or more -- grains(grains.GOS>=1*degree)   
+    
+        c. indexed grains  --  only analyze grains that contain orientation solutions of an indexed phase (grains('indexed') or grains(grains.phase>0)
 
 
 
-%% compute orientation dispersion tensor for each grain
+Example:
+
+condition = grains(grains.grainSize>=3 & grains.GOS>=1*degree & grains.phase>0);
+
+grains = grains(condition);
+
+
+%% compute orientation dispersion tensor and CVA results for each grain
 
 [gCVA, bulk] = grainsCVA(grains,ebsd)
+
 
 % NOTE: When you run the analysis, the Matlab terminal will update with "percent done" message to help gage the time left. 
 
@@ -49,15 +61,21 @@ After you have imported an ebsd dataset and constructed grains, perhaps try the 
 
 
 
-% to visualize all of the rotation axes from all of the grains:
+% Filter results to exclude axes computed from grains with insignificant intragranular distortion / lattice curvature.
+% perhaps 1-degree of grain-orientation-spread (GOS) is a conservative bare minimum requirement for a grain/kernel to be considered.
+
+gCVA = gCVA(gCVA.GOS>=1*degree)
+
+
+
+
+%% To visualize all of the rotation axes from all of the grains:
 
 figure,
 
 plot(gCVA.CVA,'antipodal','lower','smooth','halfwidth',10*degree)
 
 mtexColorbar('Title','M.U.D.')
-
-
 
 % add the "bulk" vorticity axis -- highest MUD using a KDE with 10-degree halfwidth
 
@@ -67,7 +85,8 @@ plot(bulk,'antipodal','lower','Marker','^','MarkerSize',15,'MarkerEdgeColor','w'
 
 
 
-% visualize results for grains of a specific phase (ex: 'forsterite')
+
+%% Visualize results for grains of a specific phase (ex: 'forsterite')
 
 figure,
 
@@ -77,36 +96,21 @@ mtexColorbar('Title','M.U.D.')
 
 
 
-# Weighting or filtering CVA results??
-
-Some folks have noted that when applying CVA to samples which do not exhibit much intragranular distortion of the lattice (and hence not much orientation dispersion of the lattice), the results of the CVA analysis are "noisy" due to the fact that the CVA analysis will assign a best-fit rotation for any amount of dispersion in the orientations (even if the orientation spread is potentially insignificantly small). One proposed method for teasing out a more significant signal from the results may be to filter or weight the results prior to visualizing or further analyzing. A colleague suggested using a ratio of the axes magnitudes of the [best-fit] dispersion tensor to ignore results for which the ratio is "not significant". Determining that value is arbitrary. In the following example snippet, I use the value of 1.4 as a threshold for the ratio between the magnitudes of the primary and secondary principal axes of each grain-scale dispersion tensor. I borrowed this value from my experience analyzing shape-preferred orientations of grains, in which I typically ignore grain-shape ellipses that have an aspect ratio less than 1.4. By imposing a lower limit on the CVA results, you exclude results that do not have a strongly "preferred" best-fit to their orientation dispersion. Increasing the lower limit, and/or plotting subsets of the data within different ratio ranges, may be one interesting way to explore details of CVA results. For many datasets, using a 1.4 ratio cutoff does not seem to filter out many results and does not seem to have a perceptible influence on the plot.  However, for some samples, it has a *dramatic* effect on the plot, and it may be worth exploring such results in more detail.
 
 
 
+%% NEW: plot mean dispersion tensor
 
-% Plot a filtered version of the CVA data
+meanT = mean(gCVA.cvaTensors);
 
-gCVA = gCVA(gCVA.mag1>0);
 
 figure,
 
-plot(gCVA(gCVA.mag1./gCVA.mag2>=1.4).CVA,'antipodal','lower','smooth','halfwidth',10*degree)
-
-mtexColorbar('Title','M.U.D.')
+plot(meanT,'antipodal','lower')
 
 
 
 
 # Contact and support
 
-Please feel free to write to Zach Michels (mich0201@umn.edu) with any questions or concerns, or for any assistance.
-
-
-
-
-
-
-
-
-
-
+Please feel free to write to Zach Michels zacharymichels@arizona.edu) with any questions or concerns, or for any assistance.
