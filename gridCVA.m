@@ -182,7 +182,7 @@ eCVA.prop.mag3 = mags(3,:);
 eCVA.prop.kos = kos;
 eCVA.prop.kax = kax;
 eCVA.prop.meanRotation = meanRotation;
-eCVA.prop.cvaTensors = T;
+eCVA.prop.ODT = T;
 
 
 

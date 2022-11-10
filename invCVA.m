@@ -8,6 +8,7 @@ xtalCVA.CVA = meanO.\gPhase.CVA(:);
 xtalCVA.eV1 = meanO.\gPhase.eV1(:);
 xtalCVA.eV2 = meanO.\gPhase.eV2(:);
 xtalCVA.eV3 = meanO.\gPhase.eV3(:);
+xtalCVA.ODT = meanO.\gPhase.ODT(:);
 
 
 %% plot it
