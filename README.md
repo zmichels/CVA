@@ -101,7 +101,7 @@ mtexColorbar('Title','M.U.D.')
 
 %% NEW: plot mean dispersion tensor
 
-meanT = mean(gCVA.cvaTensors);
+meanT = mean(gCVA.ODT);
 
 
 figure,
