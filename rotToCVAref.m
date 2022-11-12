@@ -15,4 +15,4 @@ mODT = mean(gCVA.ODT);
 % cvaMode = calcModes(cvaODF);
 
 %% compute rotation
-rotCVA = rotation.map(v(3),vector3d.Z,v(1),vector3d.Y);
+rotCVA = rotation.map(v(3),vector3d.Z,v(2),vector3d.Y);
