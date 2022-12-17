@@ -53,7 +53,7 @@ gCVA = gCVA(gCVA.grainSize>=3&gCVA.GOS>0.01*degree);
 ebsd = ebsd(gCVA);
 
 
-ebsd(ebsd.phase<1) = [];
+% ebsd(ebsd.phase<1) = [];
 
 [gid,~,eindex] = unique(ebsd.grainId);
 
