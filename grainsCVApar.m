@@ -75,15 +75,17 @@ end
 
 %% anlysis loop
 fprintf('\n\n%i grains\n\n',num)
-WaitMessage = parfor_wait(num,'Waitbar',true);
+
+fprintf('\nWorking... please be patient... this can take a while.')
+
 for n = 1:length(gid)
-    WaitMessage.Send;
+    
     [eVg(:,n),mags(:,n),T(n,:)] = PGA(ebsd(eindex==n).orientations);
     
     
     
 end
-WaitMessage.Destroy
+
 
 %% project to lower hemisphere
 eVg(eVg.z>0)=-eVg(eVg.z>0);

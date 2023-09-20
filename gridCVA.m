@@ -48,14 +48,15 @@
 %%
 function [eCVA,bv] = gridCVA(ePhase,varargin)
 
-
+warning off
 %%
 narginchk(1,2)
 nargin;
+if nargin > 1
 varargin;
 grains = [varargin{1}];
 
-if nargin > 1
+
     % check if grainID exists
     if isempty(ePhase.grainId)
         

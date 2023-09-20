@@ -48,14 +48,15 @@
 %%
 function [eCVA,bv] = gridCVApar(ePhase,varargin)
 
-
+warning off
 %%
 narginchk(1,2)
 nargin;
+if nargin > 1
 varargin;
 grains = [varargin{1}];
 
-if nargin > 1
+
     % check if grainID exists
     if isempty(ePhase.grainId)
         
@@ -140,11 +141,13 @@ end
 
 fprintf('\n%i kernels\n',num)
 
+fprintf('\nWorking... please be patient... this can take a while.')
 
-WaitMessage = parfor_wait(num,'Waitbar',true);
+
+
 
 parfor n = 1:num
-    WaitMessage.Send;
+    
     pInd = pID(:,:,n)==pID(2,2,n)&pID(:,:,n)>0;
     rots = oRot(pInd(1,:),pInd(:,1),n);
     rots = rots(~isnan(rots(:)));
@@ -161,15 +164,9 @@ parfor n = 1:num
         kax(n,:) = mean(axis(rots,mean(rots)));
         
     end
-%     % Keep track of for loop progress and print to consoloe screen:
-%         perc=round(n/num*100);
-%         if n==count            
-%             fprintf('\n%i%% done...\n',perc)
-%             count=count+div;
-%         end
 
 end
-WaitMessage.Destroy
+
 % project to lower hemisphere
 eV(eV.z>0)=-eV(eV.z>0);
 
