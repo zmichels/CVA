@@ -189,11 +189,17 @@ eCVA.prop.ODT = T;
 
 
 %% Handle results
+
 % identify null solutions
-cond = (norm(eCVA.CVA)==0 | isnan(eCVA.mag1) | isnan(eCVA.CVA) | isnan(eCVA.kax));
+cond1 = (norm(eCVA.CVA)==0 | isnan(eCVA.mag1) | isnan(eCVA.CVA) | isnan(eCVA.kax));
 
 % apply condition
-eCVA(cond) = [];
+eCVA(cond1) = [];
+
+% remove high-magnitude outliers
+q = quantile(eCVA.mag1,0.99);
+cond2 = eCVA.mag1>q;
+eCVA(cond2) = [];
 
 
 %% Kernel Density Estimation to get a best fit "bulk" vorticity vector.
@@ -207,6 +213,7 @@ kde = calcDensity([eCVA.CVA -eCVA.CVA],r,'antipodal','halfwidth',10*degree);
 % get vector and negated vector (antipodal) of best-fit axis:
 bv=[r(I),-r(I)];
 bv(bv.z>0) = [];
+
 
 
 end
