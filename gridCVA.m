@@ -117,6 +117,7 @@ end
 
 
 %% assign rotations
+egrid(~(egrid.isIndexed)).phase = nan;
 oRot = egrid(win1).rotations;
 pID = egrid(win1).phase;
 CSList = egrid.CSList;
@@ -141,7 +142,7 @@ fprintf('\n%i%% done\n',0)
 
 for n = 1:num
     
-    pInd = pID(:,:,n)==pID(2,2,n)&pID(:,:,n)>0;
+    pInd = pID(:,:,n)==pID(2,2,n)&~isnan(pID(:,:,n));
     rots = oRot(pInd(1,:),pInd(:,1),n);
     rots = rots(~isnan(rots(:)));
 %     o = orientation(o,CSList(pID(2,2,n)+1),mineralList(pID(2,2,n)+1));
