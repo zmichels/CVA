@@ -201,6 +201,8 @@ q = quantile(eCVA.mag1,0.99);
 cond2 = eCVA.mag1>q;
 eCVA(cond2) = [];
 
+eCVA(isnan(eCVA.orientations)) = [];
+
 
 %% Kernel Density Estimation to get a best fit "bulk" vorticity vector.
 % Define a kernel density estimation with specified halfwidth. MTEX default
