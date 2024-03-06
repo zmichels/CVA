@@ -10,7 +10,7 @@ details about the CVA method (and appropriate references) are provided in
 comments within the functions.
 
 
-Please contact Z.Michels (zacharymichels@arizona.edu) with any questions or for consultation and feel free to modify these functions as allowed by the MIT open source license guidelines.
+Please contact Z.Michels (zachary.michels@gmail.com) with any questions or for consultation and feel free to modify these functions as allowed by the MIT open source license guidelines.
 Additionally, older versions of the code are available for use with earlier versions of MTEX upon request; however, these have been removed from the repository and are no
 longer being maintained. Occasionally users may find that updating to new MTEX versions results in an error with functions here -- this can happen when the MTEX functions change in new versions. In such a case, please return to this repository to check for an update that will work with latest MTEX (I check compatibility with every MTEX release, and update the scripts, if needed, immediately).
 
@@ -31,17 +31,12 @@ After you have imported an ebsd dataset and constructed grains, perhaps try the 
 
 1. Isolate a set of grains that are appropriate for CVA analysis by creating an index of grains that match conditions suitable for CVA analysis.
 
-        a. grainSize >= 3  --  grains with 3 or more solutions -- grains(grains.grainSize>=3)
+        e.g. grainSize >= 3  --  grains with 3 or more solutions -- grains(grains.grainSize>=3)
     
-        b. GOS >= 1-degree --  grains with an orientation spread of 1 degree or more -- grains(grains.GOS>=1*degree)   
-    
-        c. indexed grains  --  only analyze grains that contain orientation solutions of an indexed phase (grains('indexed') or grains(grains.phase>0)
-
-
 
 Example:
 
-condition = grains(grains.grainSize>=3 & grains.GOS>=1*degree & grains.phase>0);
+condition = grains(grains.grainSize>=3);
 
 grains = grains(condition);
 
@@ -52,20 +47,6 @@ grains = grains(condition);
 
 
 % NOTE: When you run the analysis, the Matlab terminal will update with "percent done" message to help gage the time left. 
-
-
-
-%% Exploring the CVA results
-
-% the output from the CVA analysis will include a grain set that has been appended with CVA-related data. Previous versions of the scripts output the data separately, but this new approach provides for easier workflow, in my opinion.
-
-
-
-% Filter results to exclude axes computed from grains with insignificant intragranular distortion / lattice curvature.
-% perhaps 1-degree of grain-orientation-spread (GOS) is a conservative bare minimum requirement for a grain/kernel to be considered.
-
-gCVA = gCVA(gCVA.GOS>=1*degree)
-
 
 
 
