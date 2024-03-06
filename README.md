@@ -94,4 +94,4 @@ plot(meanT,'antipodal','lower')
 
 # Contact and support
 
-Please feel free to write to Zach Michels zacharymichels@arizona.edu) with any questions or concerns, or for any assistance.
+Please feel free to write to Zach Michels (zachary.michels@gmail.com) with any questions or concerns, or for any assistance.
