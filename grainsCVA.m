@@ -70,6 +70,7 @@ eVg = [vector3d(nan(3,num));vector3d(nan(3,num));vector3d(nan(3,num))];
 mags = nan(3,num);
 T = repmat(tensor(nan(3,3),'rank',2),[num,1]);
 
+
 %% anlysis loop
 fprintf('\n\n%i grains\n\n',num)
 
@@ -85,6 +86,7 @@ for n = 1:length(gid)
         end
     
 end
+
 
 %% project to lower hemisphere
 eVg(eVg.z>0)=-eVg(eVg.z>0);

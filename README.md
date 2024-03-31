@@ -1,6 +1,6 @@
-# CVA
+# CVA and PGA
 
-Code for Crystallographic Vorticity Axis analysis
+Code for Crystallographic Vorticity Axis analysis and Principal Geodesic Analysis
 
 
 The provided code snippets and functions can be run in MATLAB and are written to
@@ -27,16 +27,21 @@ crystallographic orientations, Geology, G36868.1, first published on July 17,
 # Example application or workflow
 
 
-After you have imported an ebsd dataset and constructed grains, perhaps try the following workflow example as a starting point.
+After you have imported an EBSD dataset and constructed grains, perhaps try the following workflow example as a starting point.
 
 1. Isolate a set of grains that are appropriate for CVA analysis by creating an index of grains that match conditions suitable for CVA analysis.
 
-        e.g. grainSize >= 3  --  grains with 3 or more solutions -- grains(grains.grainSize>=3)
+        a. grainSize >= 3  --  grains with 3 or more solutions -- grains(grains.grainSize>=3)
     
+        b. GOS >= 1-degree --  grains with an orientation spread of 1 degree or more -- grains(grains.GOS>=1*degree)   
+    
+        c. indexed grains  --  only analyze grains that contain orientation solutions of an indexed phase (grains('indexed') or grains(grains.phase>0)
+
+
 
 Example:
 
-condition = grains(grains.grainSize>=3);
+condition = grains(grains.grainSize>=3 & grains.GOS>=1*degree & grains.phase>0);
 
 grains = grains(condition);
 
@@ -47,6 +52,20 @@ grains = grains(condition);
 
 
 % NOTE: When you run the analysis, the Matlab terminal will update with "percent done" message to help gage the time left. 
+
+
+
+%% Exploring the CVA results
+
+% the output from the CVA analysis will include a grain set that has been appended with CVA-related data. Previous versions of the scripts output the data separately, but this new approach provides for easier workflow, in my opinion.
+
+
+
+% Filter results to exclude axes computed from grains with [potentially] insignificant intragranular distortion / lattice curvature.
+% perhaps 1-degree of grain-orientation-spread (GOS) is a conservative bare minimum requirement for a grain/kernel to be considered.
+
+gCVA = gCVA(gCVA.GOS>=1*degree)
+
 
 
 
@@ -94,4 +113,4 @@ plot(meanT,'antipodal','lower')
 
 # Contact and support
 
-Please feel free to write to Zach Michels (zachary.michels@gmail.com) with any questions or concerns, or for any assistance.
+Please feel free to write to Zach Michels zachary.michels@gmail.com) with any questions or concerns, or for any assistance.

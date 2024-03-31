@@ -18,25 +18,25 @@
 % output:
 %        eCVA (EBSD variable appended with PGA results, such as the
 %        following):
-%
-%            eV:      PGA eigenvectors as vector3d  ––  eV(1,:) = cva
-%          mags:      Eigenvalue of eigenvectors    ––  mags(1,:) for cva's
-%            bv:      Preferred cva direction as vector3d
-%           eId:      ids of ebsd at center of 3x3 window
-%
-%
+%           ODT:      Orientation dispersion tensor result from PGA
+%            eV:      ODT eigenvectors as vector3d  ––  eV(1,:) = cva
+%          mags:      Eigenvalues of eigenvectors    ––  mags(1,:) for cva's
+
+
+
+
 % example usage:
-%
+
 % % load some data
 
 % mtexdata forsterite
-%
+
 % % compute the kernel CVA analysis (use either of the following syntax)
 % [eCVA,bv] = gridCVA(ebsd)            % all points
 % [eCVA,bv] = gridCVA(ebsd, grains)    % excluding points adjacent to
-%                                             grain boundaries
-%
-%
+
+
+
 % % plot results and best-fit/preferred cva vector
 % figure,
 % plot(eCVA.CVA,'antipodal','lower','smooth')
@@ -46,37 +46,37 @@
 
 
 %%
-function [eCVA,bv] = gridCVA(ePhase,varargin)
+function [eCVA,bv] = gridCVA(ebsd,varargin)
 
 warning off
 %%
 narginchk(1,2)
 nargin;
 if nargin > 1
-varargin;
-grains = [varargin{1}];
+    varargin;
+    grains = [varargin{1}];
 
 
     % check if grainID exists
-    if isempty(ePhase.grainId)
-        
+    if isempty(ebsd.grainId)
+
         error('There is no ebsd.grainId. Run calcGrains first.')
-        
+
     end
-    
+
     % get ebsd IDs at grain on either side of grain boundaries
-    eId = grains.boundary.ebsdId(:);
-    
+    eIdB = grains.boundary.ebsdId(:);
+
     % remove any zeros
-    eId(eId==0)=[];
-    
+    eIdB(eIdB==0)=[];
+
     % remove the identified pixels from the dataset
-    ePhase('id',intersect(ePhase.id,eId)) = [];
+    ebsd('id',intersect(ebsd.id,eIdB)) = [];
 end
 
 %%
 % gridify
-egrid = ePhase('indexed').gridify;
+egrid = ebsd.gridify;
 
 % ebsd ids in grid/matrix
 ids = egrid.id;
@@ -94,41 +94,53 @@ col = 2:1:max(b1)-1;
 inds = ids(2:a1-1,2:b1-1);
 eId = inds(:);
 
-phases = unique(egrid('indexed').phase);
+phases = unique(egrid.phase);
 
 %% initialize window
 num = length(eId);
 
-win1 = zeros(w,w,num);
+win1 = zeros(num,w*w);
 
 for s = 1:num
     % s = 1;
     c = inds(s);
-    
-    win1(:,:,s) =   [   c-a1-1     c-1    c+a1-1;
-        
-                        c-a1       c      c+a1;
-                     
-                        c-a1+1     c+1    c+a1+1   ];
-                 
-    
+
+    win1(s,:) =   [   c-a1-1     c-1    c+a1-1    c-a1       c      c+a1  c-a1+1     c+1    c+a1+1   ];
+
+
 end
 
 
-
 %% assign rotations
+% nan not-indexed
 egrid(~(egrid.isIndexed)).phase = nan;
-oRot = egrid(win1).rotations;
+% phase IDs
 pID = egrid(win1).phase;
+% Crystal Symmetry list
 CSList = egrid.CSList;
+% mieral name list
 mineralList = egrid.mineralList;
+% phase numbers
+p = egrid('id',eId).phase;
+% for logical query
+pind1 = pID(:)==reshape(repmat(p,1,w*w),[w*w*num,1]);
+% logical index by phase of points in the kernel window with a phase that
+% matches the central point
+pind = reshape(pind1,size(pID));
+% get the indexed phase numbers
+pp = pind.*pID;
+% ids of points in the windows
+winId = egrid('id',win1).id;
+% use logical index to leave only ones of same phase
+winId(~pind) = 0;
+
 
 %% pre-allocate
 eV = [vector3d.nan(1,num); vector3d.nan(1,num); vector3d.nan(1,num)];
 mags = nan(3,num);
 kos = nan(size(eId));
 kax = vector3d.nan(1,num);
-meanRotation = orientation.nan(num,1);
+meanOrientation = orientation.nan(num,1);
 T = repmat(tensor(nan(3,3),'rank',2),[num,1]);
 
 
@@ -142,30 +154,32 @@ fprintf('\n%i%% done\n',0)
 
 for n = 1:num
     
-    pInd = pID(:,:,n)==pID(2,2,n)&~isnan(pID(:,:,n));
-    rots = oRot(pInd(1,:),pInd(:,1),n);
-    rots = rots(~isnan(rots(:)));
-%     o = orientation(o,CSList(pID(2,2,n)+1),mineralList(pID(2,2,n)+1));
     
-    if length(rots)>2 && max(angle(rots,mean(rots)))>.01*degree
-        
-        [eV(:,n),mags(:,n),T(n)] = PGA(rots);
-        
-        % kernel mean orientation
-        meanRotation(n) = mean(rots);
-        % kernel orientation spread (KOS - like mis2mean for kernel)
-        kos(n) = max(angle(rots,mean(rots)));
-        % kernel mean KOS axis
-        kax(n) = mean(axis(rots,mean(rots)));
-     
-    end
-    % Keep track of for loop progress and print to consoloe screen:
-        perc=round(n/num*100);
-        if n==count            
-            fprintf('\n%i%% done...\n',perc)
-            count=count+div;
+    if sum(~isnan(egrid(winId(n,winId(n,:)>0))))>2
+
+        % orientations of same phase in the kernel
+        o = egrid(winId(n,winId(n,:)>0)).orientations;
+
+        if length(o)>2 && max(angle(o,mean(o)))>.01*degree
+
+            [eV(:,n),mags(:,n),T(n)] = PGA(o);
+
+            % kernel mean orientation
+            meanOrientation(n) = mean(o);
+            % kernel orientation spread (KOS - like mis2mean for kernel)
+            kos(n) = max(angle(o,mean(o)));
+            % kernel mean KOS axis
+            kax(n) = mean(axis(o,mean(o)));
+
         end
 
+    end
+    % Keep track of for loop progress and print to consoloe screen:
+    perc=round(n/num*100);
+    if n==count
+        fprintf('\n%i%% done...\n',perc)
+        count=count+div;
+    end
 end
 
 % project to lower hemisphere
@@ -183,7 +197,7 @@ eCVA.prop.mag2 = mags(2,:);
 eCVA.prop.mag3 = mags(3,:);
 eCVA.prop.kos = kos;
 eCVA.prop.kax = kax;
-eCVA.prop.meanRotation = meanRotation;
+eCVA.prop.meanRotation = meanOrientation;
 eCVA.prop.ODT = T;
 
 
@@ -194,14 +208,11 @@ eCVA.prop.ODT = T;
 cond1 = (norm(eCVA.CVA)==0 | isnan(eCVA.mag1) | isnan(eCVA.CVA) | isnan(eCVA.kax));
 
 % apply condition
-eCVA(cond1) = [];
+eCVA = eCVA(~cond1);
 
-% remove high-magnitude outliers
-q = quantile(eCVA.mag1,0.99);
-cond2 = eCVA.mag1>q;
-eCVA(cond2) = [];
 
-eCVA(isnan(eCVA.orientations)) = [];
+eCVA = eCVA(~isnan(eCVA.rotations));
+
 
 
 %% Kernel Density Estimation to get a best fit "bulk" vorticity vector.

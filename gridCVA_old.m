@@ -46,7 +46,7 @@
 
 
 %%
-function [eCVA,bv] = gridCVApar(ePhase,varargin)
+function [eCVA,bv] = gridCVA(ePhase,varargin)
 
 warning off
 %%
@@ -117,6 +117,7 @@ end
 
 
 %% assign rotations
+egrid(~(egrid.isIndexed)).phase = nan;
 oRot = egrid(win1).rotations;
 pID = egrid(win1).phase;
 CSList = egrid.CSList;
@@ -131,39 +132,39 @@ meanRotation = orientation.nan(num,1);
 T = repmat(tensor(nan(3,3),'rank',2),[num,1]);
 
 
-%% parpool setup
-if isempty(gcp('nocreate'))
-% availableGPUs = gpuDeviceCount("available");
-pool = parpool('local',8);
-end
-
 %% analysis loop
+% for keeping track of progress in for loop:
+div=round(num/20);
+count=div;
 
 fprintf('\n%i kernels\n',num)
+fprintf('\n%i%% done\n',0)
 
-fprintf('\nWorking... please be patient... this can take a while.')
-
-
-
-
-parfor n = 1:num
+for n = 1:num
     
-    pInd = pID(:,:,n)==pID(2,2,n)&pID(:,:,n)>0;
+    pInd = pID(:,:,n)==pID(2,2,n)&~isnan(pID(:,:,n));
     rots = oRot(pInd(1,:),pInd(:,1),n);
     rots = rots(~isnan(rots(:)));
-
+%     o = orientation(o,CSList(pID(2,2,n)+1),mineralList(pID(2,2,n)+1));
+    
     if length(rots)>2 && max(angle(rots,mean(rots)))>.01*degree
         
-        [eV(:,n),mags(:,n),T(n,:)] = PGA(rots);
-     
-        % kernel mean orientation
-        meanRotation(n,:) = mean(rots);
-        % kernel orientation spread (KOS - like mis2mean for kernel)
-        kos(n,:) = max(angle(rots,mean(rots)));
-        % kernel mean KOS axis
-        kax(n,:) = mean(axis(rots,mean(rots)));
+        [eV(:,n),mags(:,n),T(n)] = PGA(rots);
         
+        % kernel mean orientation
+        meanRotation(n) = mean(rots);
+        % kernel orientation spread (KOS - like mis2mean for kernel)
+        kos(n) = max(angle(rots,mean(rots)));
+        % kernel mean KOS axis
+        kax(n) = mean(axis(rots,mean(rots)));
+     
     end
+    % Keep track of for loop progress and print to consoloe screen:
+        perc=round(n/num*100);
+        if n==count            
+            fprintf('\n%i%% done...\n',perc)
+            count=count+div;
+        end
 
 end
 
@@ -173,26 +174,34 @@ eV(eV.z>0)=-eV(eV.z>0);
 
 %% append ebsd variable
 eCVA = egrid(eId);
-eCVA.prop.CVA           = eV(1,:);
-eCVA.prop.eV1           = eV(1,:);
-eCVA.prop.eV2           = eV(2,:);
-eCVA.prop.eV3           = eV(3,:);
-eCVA.prop.mag1          = mags(1,:);
-eCVA.prop.mag2          = mags(2,:);
-eCVA.prop.mag3          = mags(3,:);
-eCVA.prop.kos           = kos;
-eCVA.prop.kax           = kax;
-eCVA.prop.meanRotation  = meanRotation;
-eCVA.prop.ODT           = T;
+eCVA.prop.CVA = eV(1,:);
+eCVA.prop.eV1 = eV(1,:);
+eCVA.prop.eV2 = eV(2,:);
+eCVA.prop.eV3 = eV(3,:);
+eCVA.prop.mag1 = mags(1,:);
+eCVA.prop.mag2 = mags(2,:);
+eCVA.prop.mag3 = mags(3,:);
+eCVA.prop.kos = kos;
+eCVA.prop.kax = kax;
+eCVA.prop.meanRotation = meanRotation;
+eCVA.prop.ODT = T;
 
 
 
 %% Handle results
+
 % identify null solutions
-cond = (norm(eCVA.CVA)==0 | isnan(eCVA.mag1) | isnan(eCVA.CVA) | isnan(eCVA.kax));
+cond1 = (norm(eCVA.CVA)==0 | isnan(eCVA.mag1) | isnan(eCVA.CVA) | isnan(eCVA.kax));
 
 % apply condition
-eCVA(cond) = [];
+eCVA(cond1) = [];
+
+% remove high-magnitude outliers
+q = quantile(eCVA.mag1,0.99);
+cond2 = eCVA.mag1>q;
+eCVA(cond2) = [];
+
+eCVA(isnan(eCVA.orientations)) = [];
 
 
 %% Kernel Density Estimation to get a best fit "bulk" vorticity vector.
@@ -207,6 +216,6 @@ kde = calcDensity([eCVA.CVA -eCVA.CVA],r,'antipodal','halfwidth',10*degree);
 bv=[r(I),-r(I)];
 bv(bv.z>0) = [];
 
-%% close / delete parpool
-delete(pool)
+
+
 end

@@ -1,43 +1,40 @@
 function [eV,mags,T] = PGA(ori)
 
+%%
+ori = ori(:);
+
+
 %% P.G.A. – Principal Geodesic Analysis
 
 %% References
-% Zachary D. Michels, Seth C. Kruckenberg, Joshua R. Davis, and Basil Tikoff
-% Determining vorticity axes from grain-scale dispersion of
+% Zachary D. Michels, Seth C. Kruckenberg, Joshua R. Davis, and Basil
+% Tikoff Determining vorticity axes from grain-scale dispersion of
 % crystallographic orientations Geology, G36868.1, first published on July
 % 17, 2015, doi:10.1130/G36868.1
+
+% Fletcher, P. Thomas, et al. "Principal geodesic analysis for the study of
+% nonlinear statistics of shape." IEEE transactions on medical imaging 23.8
+% (2004): 995-1005.
 
 
 %% ABOUT:
 % This function performs a principal geodesic analysis on crystallographic
 % orientations extracted from a single grain to identify a grain-scale
 % vorticity vector associated with intragranular crystallographic
-% dispersion. 
+% dispersion.
 
 % input:
 %                       ori     -   set of orientations
 
 % output:
-%                        eV     -   eigenvectors of PGA result
+%                        eV     -   eigenvectors of dispersion tensor
 %                      mags     -   magnitudes of the eigenvectors
+%                         T     -   Dispersion tensor
     
+% Prinicipal Geodesic Analysis is used to conduct a principal component
+% analysis on sets of orientations/rotations. The result of the analysis
+% is a covariance/dispersion matrix/tensor. 
 
-%% INTRODUCTION:
-%   It has been observed that intragranular crystallographic dispersion
-% axes can reflect the orientation of bulk vorticity in geologically
-% deformed crystalline materials (Bestmann & Prior, 2003; Reddy & Buchan,
-% 2005). We show that the coordinates of such rotational axes can be fit
-% numerically for each grain in a sample and assembled to determine a
-% preferred sample-scale vorticity axis.
-%   The general approach in the following intragranular analysis can be
-% applied to any set of concentrated orientation data. However, the
-% following code is designed to accommodate electron backscatter
-% diffraction data processed through the MTEX texture analysis toolbox for
-% Matlab. Specifically, this function requires input of a single MTEX grain
-% object (usually passed to the function from a larger MTEX GrainSet).
-% Grain objects passed to this function must contain multiple orientation
-% solutions for successful analysis.
 
 %% 
 
