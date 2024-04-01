@@ -76,7 +76,7 @@ end
 
 %%
 % gridify
-egrid = ebsd.gridify;
+egrid = ebsd('indexed').gridify;
 
 % ebsd ids in grid/matrix
 ids = egrid.id;
@@ -155,7 +155,7 @@ fprintf('\n%i%% done\n',0)
 for n = 1:num
     
     
-    if sum(~isnan(egrid(winId(n,winId(n,:)>0))))>2 & sum(egrid(winId(n,winId(n,:)>0)).phase)>2
+    if sum(~isnan(egrid(winId(n,winId(n,:)>0))))>2
 
         % orientations of same phase in the kernel
         o = egrid(winId(n,winId(n,:)>0)).orientations;
