@@ -57,6 +57,7 @@ ebsd(~(ebsd.isIndexed)) = [];
 
 [gid,~,eindex] = unique(ebsd.grainId);
 
+gCVA = gCVA('id',gid);
 
 % number of grains:
 num=length(gid);
