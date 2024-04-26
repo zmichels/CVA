@@ -30,19 +30,25 @@ ori = ori(:);
 %                        eV     -   eigenvectors of dispersion tensor
 %                      mags     -   magnitudes of the eigenvectors
 %                         T     -   Dispersion tensor
-    
+
 % Prinicipal Geodesic Analysis is used to conduct a principal component
 % analysis on sets of orientations/rotations. The result of the analysis
-% is a covariance/dispersion matrix/tensor. 
+% is a covariance/dispersion matrix/tensor.
 
 
-%% 
+%%
 
 oriRef = mean(ori);
 
 % compute the projection of orientations onto the three dimensional
 % tangential space centered about the mean
-t = log(ori, oriRef,'left');
+ver = extract(getMTEXpref('version'),digitsPattern);
+
+if str2double(ver{2}) < 11
+    t = log(ori, oriRef,'left');
+else
+    t = log(ori, oriRef,SO3TangentSpace.leftVector);
+end
 
 % covariance matrix as tensor
 T = tensor(t*t,'rank',2);
