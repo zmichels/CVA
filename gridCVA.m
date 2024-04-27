@@ -46,7 +46,7 @@
 
 
 %%
-function [eCVA,bv] = gridCVA(ebsd,varargin)
+function [eCVA,bv] = gridCVA(e,varargin)
 
 warning off
 %%
@@ -58,7 +58,7 @@ if nargin > 1
 
 
     % check if grainID exists
-    if isempty(ebsd.grainId)
+    if isempty(e.grainId)
 
         error('There is no ebsd.grainId. Run calcGrains first.')
 
@@ -71,12 +71,17 @@ if nargin > 1
     eIdB(eIdB==0)=[];
 
     % remove the identified pixels from the dataset
-    ebsd('id',intersect(ebsd.id,eIdB)) = [];
+    e('id',intersect(e.id,eIdB)) = [];
 end
 
 %%
 % gridify
-egrid = ebsd('indexed').gridify;
+egrid = e('indexed').gridify;
+
+% nan not-indexed
+egrid(~(egrid.isIndexed)).phase = nan;
+
+egrid = egrid.gridify;
 
 % ebsd ids in grid/matrix
 ids = egrid.id;
@@ -87,17 +92,12 @@ ids = egrid.id;
 % window width
 w = 3;
 
-% indices/ids of center points
-row = 2:1:max(a1)-1;
-col = 2:1:max(b1)-1;
 
 inds = ids(2:a1-1,2:b1-1);
-eId = inds(:);
-
-phases = unique(egrid.phase);
+eId = egrid(inds).id;
 
 %% initialize window
-num = length(eId);
+num = length(eId(:));
 
 win1 = zeros(num,w*w);
 
@@ -111,31 +111,30 @@ for s = 1:num
 end
 
 
-%% assign rotations
-% nan not-indexed
-egrid(~(egrid.isIndexed)).phase = nan;
+
+%% setup indexing for window
+
 % phase IDs
-pID = egrid(win1).phase;
-% Crystal Symmetry list
-CSList = egrid.CSList;
-% mieral name list
-mineralList = egrid.mineralList;
+pID = reshape(egrid(win1).phase,size(egrid(win1)));
+
 % phase numbers
 p = egrid('id',eId).phase;
+
 % for logical query
 pind1 = pID(:)==reshape(repmat(p,1,w*w),[w*w*num,1]);
+
 % logical index by phase of points in the kernel window with a phase that
 % matches the central point
 pind = reshape(pind1,size(pID));
-% get the indexed phase numbers
-pp = pind.*pID;
+
 % ids of points in the windows
 winId = egrid('id',win1).id;
+
 % use logical index to leave only ones of same phase
 winId(~pind) = 0;
 
 
-%% pre-allocate
+%% pre-allocate variables to become properties of eCVA
 eV = [vector3d.nan(1,num); vector3d.nan(1,num); vector3d.nan(1,num)];
 mags = nan(3,num);
 kos = nan(size(eId));
@@ -211,6 +210,7 @@ cond1 = (norm(eCVA.CVA)==0 | isnan(eCVA.mag1) | isnan(eCVA.CVA) | isnan(eCVA.kax
 eCVA = eCVA(~cond1);
 
 
+% filter out nan
 eCVA = eCVA(~isnan(eCVA.rotations));
 
 
