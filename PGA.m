@@ -44,7 +44,7 @@ oriRef = mean(ori);
 % tangential space centered about the mean
 ver = extract(getMTEXpref('version'),digitsPattern);
 
-if str2double(ver{2}) < 11
+if str2double(ver{2}) < 11 & str2double(ver{1}) < 6
     t = log(ori, oriRef,'left');
 else
     t = log(ori, oriRef,SO3TangentSpace.leftVector);

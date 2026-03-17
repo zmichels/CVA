@@ -48,8 +48,14 @@ if isempty(ebsd.grainId)
 end
 
 %% Setup: select grains and initialize variables for sake of loops
+ver = extract(getMTEXpref('version'),digitsPattern);
 gCVA = gCVA('indexed');
-gCVA = gCVA(gCVA.grainSize>=3&gCVA.GOS>0.01*degree);
+if str2double(ver{2}) < 11 & str2double(ver{1}) < 6
+    gCVA = gCVA(gCVA.grainSize>=3&gCVA.GOS>0.01*degree);
+else
+    gCVA = gCVA(gCVA.numPixel>=3&gCVA.GOS>0.01*degree);
+end
+
 ebsd = ebsd(gCVA);
 
 
