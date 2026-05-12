@@ -51,7 +51,7 @@ else
 end
 
 % covariance matrix as tensor
-T = tensor(t*t,'rank',2);
+T = tensor(t*t','rank',2);
 
 % eigenvector of the tensor
 [eV, mags] = eig(T);
