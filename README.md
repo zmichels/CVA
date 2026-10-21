@@ -16,6 +16,8 @@ The tested Python package is called MTEX for Python 1.0.0; its version number is
 
 MATLAB resolves a function in its current folder before paths added with `addpath`. Run a project from outside this repository root, add exactly the implementation directory you want, and check `which('PGA')`, `which('grainsCVA')`, and `which('gridCVA')` before a long analysis.
 
+For MTEX 6.1.1:
+
 ```matlab
 repo = '/absolute/path/to/CVA';
 addpath('/absolute/path/to/mtex-6.1.1');
@@ -32,6 +34,28 @@ selected = selected(1:min(24,length(selected)));
 ```
 
 The maintained MATLAB functions default to the historical antipodal density-based bulk axis. `computeBulkVector=false` makes exploratory runs cheaper and avoids plotting-grid initialization. `grainsCVA(...,'method','loop')` is a reference for checking the batched result. `gridCVA` batches work **after** calculating each window's MTEX mean, preserving the default mean-referenced analysis. Its explicit `'reference','center'` option changes the analysis and must be reported as such. Other options and returned diagnostics are documented in each function header and the [MATLAB example](examples/matlab_mtex61.m).
+
+### MTEX 7.2 grainset and complete eigenframe
+
+The runnable [MTEX 7 grainset example](examples/matlab_mtex72_grainset.m) starts from a small multiphase Forsterite map, selects grains with at least three pixels, reconstructs after selection, then computes grain CVA and mean-referenced 3-by-3 grid CVA. Supply your own imported `ebsd` to use the same workflow on a project map:
+
+```matlab
+addpath('/absolute/path/to/mtex-7.2.0')
+startup_mtex('noMenu')
+addpath('/absolute/path/to/CVA/examples')
+result = matlab_mtex72_grainset();       % MTEX example data
+% result = matlab_mtex72_grainset(ebsd); % your imported EBSD map
+```
+
+In MTEX 7, use the **second EBSD output** from `calcGrains` for later `ebsd(grains)` indexing. This example deliberately uses two passes: filtering grain pixels and reconstructing can produce a different measurement set from one pass with `'minPixel',3`. The maintained `grainsCVA` further excludes grains with negligible orientation spread; compare `length(result.grains)` with `length(result.gCVA)`.
+
+The example draws a single grain's orientation dispersion tensor (ODT) with triangle `eV1` (the CVA), square `eV2` (intermediate magnitude), and circle `eV3` (least magnitude). It also draws three-panel lower-hemisphere density figures for the grain and grid populations, with a shared M.U.D. color range **within each figure**. One grain contributes one axis to the grain figure; one accepted window contributes one axis to the grid figure. These are different weightings, so do not compare peak heights as though both figures sampled the same population. The pooled plots are in the **specimen frame**. For crystal-frame eigenaxes, select one phase and transform grain axes through each grain's `meanOrientation`, or grid axes through each kernel's `meanRotation`.
+
+Example output from the MTEX small Forsterite map (MATLAB R2025b, MTEX 7.2.0, 10° density halfwidth). Screen axes and colors follow your active MTEX plotting preferences, so their appearance may differ while the specimen-frame axes remain the same:
+
+![Grain-scale eV1, eV2, and eV3 specimen-frame densities](examples/figures/mtex72-grain-eigenframe.png)
+
+The same run also produces a [single-grain ODT with all three marked axes](examples/figures/mtex72-single-eigenframe.png) and the [grid-kernel eigenframe densities](examples/figures/mtex72-grid-eigenframe.png).
 
 For MTEX 7.2.0, initialize that installation and run the bounded compatibility suite from outside the repository root:
 
