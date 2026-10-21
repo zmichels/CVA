@@ -43,7 +43,7 @@ for phase=unique(gCVA.phaseId).'
  end
  if opt.showProgress, fprintf('CVA phase %d: %d grains\n',phase,numel(grainIndices)); end
 end
-v1=vector3d(reshape(axes(:,1,:),3,n)); v2=vector3d(reshape(axes(:,2,:),3,n)); v3=vector3d(reshape(axes(:,3,:),3,n));
+v1=principalAxis(axes,1,n); v2=principalAxis(axes,2,n); v3=principalAxis(axes,3,n);
 v1(v1.z>0)=-v1(v1.z>0); v2(v2.z>0)=-v2(v2.z>0); v3(v3.z>0)=-v3(v3.z>0);
 gCVA.prop.CVA=v1; gCVA.prop.eV1=v1; gCVA.prop.eV2=v2; gCVA.prop.eV3=v3;
 gCVA.prop.mag1=vals(1,:); gCVA.prop.mag2=vals(2,:); gCVA.prop.mag3=vals(3,:);
@@ -57,4 +57,10 @@ end
 diagnostics=struct('method',opt.method,'grainIds',gid,'phaseIds',gCVA.phaseId,...
  'meanMatrices',means,'meanMethod','exact MTEX mean per grain','tangentFrame','specimen leftVector',...
  'tensorUnits','radians squared, unnormalised sum');
+end
+
+function v=principalAxis(axes,index,n)
+% Explicit components avoid ambiguous 3-by-3 vector3d input in MTEX 7.
+v=vector3d(reshape(axes(1,index,:),1,n), ...
+ reshape(axes(2,index,:),1,n),reshape(axes(3,index,:),1,n));
 end

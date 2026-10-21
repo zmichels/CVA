@@ -7,10 +7,10 @@ This repository has three paths:
 | Path | Use | Tested environment |
 | --- | --- | --- |
 | [`PGA.m`](PGA.m), [`grainsCVA.m`](grainsCVA.m), [`gridCVA.m`](gridCVA.m) at the root | Unchanged historical MATLAB entry points | MATLAB R2025b, MTEX 6.1.1 bounded checks |
-| [`matlab/mtex61/`](matlab/mtex61/) | Maintained MATLAB functions with the same names, phase-aware batching, and explicit options | MATLAB R2025b, MTEX 6.1.1 |
+| [`matlab/mtex61/`](matlab/mtex61/) | Maintained MATLAB functions with the same names, phase-aware batching, and explicit options | MATLAB R2025b, MTEX 6.1.1 and 7.2.0; 7.2 automated checks exclude S² bulk density because of a native batch-shutdown crash |
 | [`python/`](python/) | Python PGA, grain CVA, and grid CVA using MTEX for Python | Python 3.13, **MTEX for Python 1.0.0** |
 
-The tested Python package is called MTEX for Python 1.0.0; this release does not claim compatibility with a MATLAB MTEX 7 installation. The separate unpublished `reversePGA.m` in the ODA project is not part of this release.
+The tested Python package is called MTEX for Python 1.0.0; its version number is independent of MATLAB MTEX 7. The separate unpublished `reversePGA.m` in the ODA project is not part of this release.
 
 ## Choose the MATLAB path deliberately
 
@@ -32,6 +32,18 @@ selected = selected(1:min(24,length(selected)));
 ```
 
 The maintained MATLAB functions default to the historical antipodal density-based bulk axis. `computeBulkVector=false` makes exploratory runs cheaper and avoids plotting-grid initialization. `grainsCVA(...,'method','loop')` is a reference for checking the batched result. `gridCVA` batches work **after** calculating each window's MTEX mean, preserving the default mean-referenced analysis. Its explicit `'reference','center'` option changes the analysis and must be reported as such. Other options and returned diagnostics are documented in each function header and the [MATLAB example](examples/matlab_mtex61.m).
+
+For MTEX 7.2.0, initialize that installation and run the bounded compatibility suite from outside the repository root:
+
+```matlab
+restoredefaultpath
+addpath('/absolute/path/to/mtex-7.2.0')
+startup_mtex('noMenu')
+r = runtests('/absolute/path/to/CVA/tests/matlab/testCVA_Mtex72.m');
+assertSuccess(r)
+```
+
+This checks the maintained PGA against the committed 6.1.1 fixtures and compares grain loop/batched results on a synthetic three-phase map, along with mean- and center-referenced grid fixtures. The historical root functions remain the 6.1.1 edition. The [parity report](docs/parity-report.md) records the separate S² density calculation and batch-shutdown limitation.
 
 ## Python
 
