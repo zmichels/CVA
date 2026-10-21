@@ -1,0 +1,2 @@
+tests/fixtures/*.json linguist-generated=true
+tests/fixtures/*.csv linguist-generated=true
