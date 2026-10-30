@@ -48,6 +48,10 @@ Grains are ordered by grain ID. Grid centers use increasing x then increasing y
 Grid inputs must use a regular square coordinate grid; missing coordinates are
 omitted from windows. Only interior, indexed centers with at least three same
 phase pixels and maximum reference disorientation > 0.01 degrees are retained.
+Pass `center_ids=[...]` to evaluate selected source pixel IDs against their
+unchanged 3-by-3 neighborhoods in the full input map; results retain spatial
+order. An unknown source ID raises an error. Omitting `center_ids` evaluates
+all interior centers.
 `same_grain=True` additionally filters each window by its center grain ID.
 `reference='center'` is a distinct scientific analysis; it does not substitute
 for the default mean analysis. Selection, KOS, KAX and the tensor all use the

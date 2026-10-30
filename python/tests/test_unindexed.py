@@ -82,6 +82,7 @@ def test_absorbed_unmeasured_pixel_is_excluded_from_grain_cva():
 def test_absorbed_unmeasured_pixel_is_excluded_from_grid_cva():
     ebsd, _ = absorbed_pixel_map()
     center_id = int(ebsd.id[2, 2])
+    assert not grid_cva(ebsd, center_ids=[center_id]).records
     for same_grain in (False, True):
         result = grid_cva(ebsd, same_grain=same_grain)
         assert result.records
