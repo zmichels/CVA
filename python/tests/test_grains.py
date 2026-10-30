@@ -21,6 +21,19 @@ def test_selection_minimum_count_and_gos(multiphase):
     grains=dict(id=[30,10,20,99],phase_ids=[3,1,2,1],num_pixel=[2,12,12,3],gos=[1,0,1,1])
     assert list(grains_cva(multiphase,grains).records)==[20]
 
+def test_interleaved_grain_members_keep_source_order_and_tensor(multiphase):
+    data=copy.deepcopy(multiphase)
+    data['grain_ids']=data['phase_ids']*10+np.arange(len(data['id']))%2
+    result=grains_cva(data)
+    assert list(result.records)==[10,11,20,21,30,31]
+    for gid,record in result.records.items():
+        mask=data['grain_ids']==gid
+        np.testing.assert_array_equal(record.member_ids,data['id'][mask])
+        phase=int(data['phase_ids'][mask][0])
+        expected=pga(mtex.orientation.byMatrix(data['rotations'][mask],
+                                                mtex.crystalFrame(data['phases'][phase])))
+        np.testing.assert_allclose(record.pga.tensor,expected.tensor)
+
 def test_native_mtex_ebsd_and_grain_objects_are_accepted(multiphase):
     d=multiphase
     e=mtex.EBSD(mtex.vector3d(np.column_stack([d['x'],d['y'],np.zeros(len(d['id']))])),

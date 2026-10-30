@@ -19,6 +19,38 @@ def test_same_grain_mask_and_invalid_centers(multiphase):
     multiphase['phase_ids'][7]=0
     assert 108 not in grid_cva(multiphase).records
 
+def test_selected_center_ids_match_full_grid_in_spatial_order(multiphase):
+    full=grid_cva(multiphase)
+    selected=grid_cva(multiphase,center_ids=[129,108,117,129])
+    assert list(selected.records)==[108,117,129]
+    for source_id,record in selected.records.items():
+        original=full.records[source_id]
+        np.testing.assert_array_equal(record.member_ids,original.member_ids)
+        np.testing.assert_allclose(record.pga.tensor,original.pga.tensor)
+    assert not grid_cva(multiphase,center_ids=[]).records
+    with pytest.raises(ValueError,match='source ID not present'):
+        grid_cva(multiphase,center_ids=[999])
+
+def test_selected_grid_covaries_with_specimen_rotation_keepxy(multiphase):
+    import mtex
+    d=multiphase
+    ebsd=mtex.EBSD(mtex.vector3d(np.column_stack([d['x'],d['y'],np.zeros(len(d['id']))])),
+                   mtex.rotation.byMatrix(d['rotations']),d['phase_ids'],
+                   [mtex.notIndexedFrame()]+[mtex.crystalFrame(d['phases'][p]) for p in (1,2,3)],
+                   prop={'grainId':d['grain_ids']},id=d['id'])
+    rotation=mtex.rotation.byAxisAngle(mtex.vector3d([1,2,3]),37*mtex.degree)
+    moved=ebsd.rotate(rotation,keepXY=True)
+    np.testing.assert_array_equal(moved.pos.data,ebsd.pos.data)
+    before=grid_cva(ebsd,center_ids=[108,117,129])
+    after=grid_cva(moved,center_ids=[108,117,129])
+    assert before.records.keys()==after.records.keys()
+    matrix=np.asarray(rotation.matrix())
+    for source_id,record in before.records.items():
+        changed=after.records[source_id]
+        np.testing.assert_array_equal(changed.member_ids,record.member_ids)
+        np.testing.assert_allclose(changed.pga.tensor,matrix@record.pga.tensor@matrix.T,atol=1e-12)
+        np.testing.assert_allclose(changed.pga.eigenvalues,record.pga.eigenvalues,atol=1e-12)
+
 def test_low_spread_is_excluded(multiphase):
     multiphase['rotations'][:]=multiphase['rotations'][0]
     assert len(grid_cva(multiphase).records)==0
