@@ -28,8 +28,12 @@ crystal frames or symmetry strings. Phase IDs <= 0 are unindexed; a positive
 phase ID is indexed only when its `phases` entry names a crystal frame or
 symmetry. A missing entry, `None`, or a `notIndexedFrame` marks that phase
 unindexed, including phase ID 1 in MATLAB-exported arrays. For native MTEX
-EBSD, the adapter uses `ebsd.isIndexed` and excludes padding. An indexed
-crystal phase may still have ID 1 when its frame is present.
+EBSD, the adapter uses `ebsd.isIndexed` and excludes padding. Both input forms
+also require a finite orientation at each retained pixel. `calcGrains` can
+assign a grain and crystal phase to an unmeasured interior pixel while leaving
+its orientation missing; CVA excludes that pixel from grains and grid windows,
+and never uses it as a grid center. An indexed crystal phase may still have ID 1
+when its frame is present.
 For grain selection a dictionary may supply `id`, `phase_ids`, `num_pixel`,
 and `gos`; GOS is in radians. With no grain metadata the adapter derives
 count and GOS from indexed samples. MTEX EBSD inputs require precomputed

@@ -38,6 +38,10 @@ def arrays(ebsd):
             else:
                 is_indexed=bool(getattr(frame,'isIndexed',False))
             if is_indexed:d['_indexed'][d['phase_ids']==phase]=True
+    # calcGrains can absorb an unmeasured pixel into a grain and assign its
+    # phase without supplying an orientation. Phase membership alone is not
+    # sufficient for CVA, whether the input is native EBSD or an array mapping.
+    d['_indexed'] &= np.isfinite(d['rotations']).all(axis=(1,2))
     return d
 
 def _phase_frame(phases,phase):
